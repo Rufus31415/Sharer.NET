@@ -7,7 +7,31 @@
 Sharer is an Arduino library that facilitates the communication between a PC and an Arduino board.
 You chose the functions and variables you want to share with your desktop application and your arduino board. Functions can be easily remotly called.
 
-## Arduino code example
+## .NET C# code example
+
+
+``` C#
+// Connect to Arduino board
+var connection = new SharerConnection("COM3", 115200);
+connection.Connect();
+
+// Scan all functions shared
+connection.RefreshFunctions();
+
+// remote call function on Arduino and wait for the result
+var result = connection.Call("Sum", 10, 12);
+
+// Display the result
+Console.WriteLine("Status : " + result.Status);
+Console.WriteLine("Type : " + result.Type);
+Console.WriteLine("Value : " + result.Value);
+
+// Status : OK
+// Type : int
+// Value : 22
+```
+
+## [Arduino code example](https://github.com/Rufus31415/Sharer.NET)
 
 ``` C++
 #include <Sharer.h>
@@ -37,31 +61,4 @@ void setup() {
 void loop() {
 	Sharer.run();
 }
-```
-
-
-## [.NET C# code exemple](https://github.com/Rufus31415/Sharer.NET)
-
-
-
-More examples [here](https://github.com/Rufus31415/Sharer.NET)
-``` C#
-// Connect to Arduino board
-var connection = new SharerConnection("COM3", 115200);
-connection.Connect();
-
-// Scan all functions shared
-connection.RefreshFunctions();
-
-// remote call function on Arduino and wait for the result
-var result = connection.Call("Sum", 10, 12);
-
-// Display the result
-Console.WriteLine("Status : " + result.Status);
-Console.WriteLine("Type : " + result.Type);
-Console.WriteLine("Value : " + result.Value);
-
-// Status : OK
-// Type : int
-// Value : 22
 ```
