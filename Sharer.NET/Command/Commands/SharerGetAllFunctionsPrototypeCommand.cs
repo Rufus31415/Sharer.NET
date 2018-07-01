@@ -47,7 +47,7 @@ namespace Sharer.Command
         private SharerFunction _currentFunction;
         private SharerFunctionArgument _currentArgument;
 
-        private List<byte> _nameByte = new List<byte>();
+        private List<byte> _nameByte = new List<byte>(20);
 
         internal override bool DecodeArgument(byte b)
         {

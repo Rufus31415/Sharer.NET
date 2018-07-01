@@ -380,7 +380,6 @@
             this.btnCall0.TabIndex = 3;
             this.btnCall0.Text = "call 0";
             this.btnCall0.UseVisualStyleBackColor = true;
-            this.btnCall0.Click += new System.EventHandler(this.btnCall0_Click);
             // 
             // btnDisconnect
             // 

@@ -15,11 +15,11 @@ namespace Sharer.Command
         UnknownType,
     }
 
-    public class SharerFunctionReturn
+    public class SharerFunctionReturn<ReturnType>
     {
         public SharerCallFunctionStatus Status = SharerCallFunctionStatus.UnknownStatus;
         public SharerType Type;
-        public object Value;
+        public ReturnType Value;
 
         public override string ToString()
         {
@@ -36,7 +36,8 @@ namespace Sharer.Command
     }
 
 
-    class SharerCallFunctionCommand: SharerSentCommand
+
+    class SharerCallFunctionCommand<ReturnType> : SharerSentCommand
     {
         private byte[] _buffer;
         SharerType _returnType;
@@ -45,6 +46,7 @@ namespace Sharer.Command
         {
             _buffer = buffer;
             _returnType = returnType;
+            Return.Type = returnType;
         }
 
         public override SharerCommandID CommandID
@@ -70,7 +72,7 @@ namespace Sharer.Command
         // reception step
         private Steps _receivedStep = Steps.Status;
 
-        public SharerFunctionReturn Return = new SharerFunctionReturn();
+        public SharerFunctionReturn<ReturnType> Return = new SharerFunctionReturn<ReturnType>();
 
         private List<byte> _returnBytes = new List<byte>();
 
@@ -102,7 +104,7 @@ namespace Sharer.Command
                     // if enought returned byte, decode it and end
                     if(_returnBytes.Count>= _returnSize)
                     {
-                        Return.Value = SharerTypeHelper.Decode(_returnType, _returnBytes.ToArray());
+                        Return.Value = (ReturnType)SharerTypeHelper.Decode(_returnType, _returnBytes.ToArray());
 
                         _receivedStep = Steps.End;
                     }

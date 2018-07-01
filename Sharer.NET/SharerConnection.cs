@@ -16,23 +16,23 @@ namespace Sharer
     public class SharerConnection
     {
         private const Byte SHARER_START_COMMAND_CHAR = 0x92;
-        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 10);
+        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 5);
 
         private SerialPort _serialPort = new SerialPort();
 
-        public SharerConnection(string portName, int baudRate)
+        public SharerConnection(string portName, int baudRate, Parity parity = Parity.None, int dataBit=8, StopBits stopBits=StopBits.One, Handshake handShake=Handshake.None)
         {
             _serialPort.PortName = portName;
 
             _serialPort.BaudRate = baudRate;
 
-            _serialPort.Parity = Parity.None;
+            _serialPort.Parity = parity;
 
-            _serialPort.DataBits = 8;
+            _serialPort.DataBits = dataBit;
 
-            _serialPort.StopBits = StopBits.One;
+            _serialPort.StopBits = stopBits;
 
-            _serialPort.Handshake = Handshake.None;
+            _serialPort.Handshake = handShake;
 
             // Set the read/write timeouts
             _serialPort.ReadTimeout = 500;
@@ -66,9 +66,7 @@ namespace Sharer
                 int count = _serialPort.Read(data, 0, data.Length);
 
                 if (count > 0)
-                {
-                    Console.WriteLine(BitConverter.ToString(data, 0, count));
-
+                {    
                     for (int i = 0; i < count; i++)
                     {
                         ParseReceivedData(data[i]);
@@ -205,7 +203,7 @@ namespace Sharer
             Functions.AddRange(cmd.Functions);
         }
 
-        public SharerFunctionReturn Call(string functionName, params object[] arguments)
+        public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName,TimeSpan timeout, params object[] arguments)
         {
             assertConnected();
 
@@ -264,18 +262,7 @@ namespace Sharer
 
                             try
                             {
-                                switch (function.Arguments[i].Type)
-                                {
-                                    case SharerType.@int:
-                                        writer.Write(Int16.Parse(arguments[i].ToString()));
-                                        break;
-                                    case SharerType.@float:
-                                        writer.Write(float.Parse(arguments[i].ToString()));
-                                        break;
-
-                                    default:
-                                        throw new Exception("Argument type " + function.Arguments[i].Type.ToString() + " not supported");
-                                }
+                                SharerTypeHelper.Encode(function.Arguments[i].Type, writer, arguments[i]);
                             }
                             catch(Exception ex)
                             {
@@ -292,11 +279,11 @@ namespace Sharer
 
             var lst = new List<SharerFunction>();
 
-            var cmd = new SharerCallFunctionCommand(buffer, function.ReturnType);
+            var cmd = new SharerCallFunctionCommand<ReturnType>(buffer, function.ReturnType);
 
             sendCommand(cmd);
 
-            bool success = cmd.WaitAnswer(DEFAULT_TIMEOUT);
+            bool success = cmd.WaitAnswer(timeout);
 
             if (!success)
             {
@@ -305,6 +292,23 @@ namespace Sharer
 
             return cmd.Return;
         }
+
+        public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName, params object[] arguments)
+        {
+            return Call<ReturnType>(functionName, DEFAULT_TIMEOUT, arguments);
+        }
+
+        public SharerFunctionReturn<object> Call(string functionName, TimeSpan timeout, params object[] arguments)
+        {
+            return Call<object>(functionName, timeout, arguments);
+        }
+
+        public SharerFunctionReturn<object> Call(string functionName, params object[] arguments)
+        {
+            return Call<object>(functionName, DEFAULT_TIMEOUT, arguments);
+        }
+
+
 
         // ID of the last sent command (incremented at every new command sent)
         private byte _currentSupervisorCommandID = 0;

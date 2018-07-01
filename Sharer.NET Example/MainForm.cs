@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sharer;
+using System.Diagnostics;
 
 namespace Sharer.NETTest
 {
@@ -78,6 +79,13 @@ namespace Sharer.NETTest
                             pnl.Controls.Add(_getFunctionLabel(func.ReturnType.ToString(), Color.Purple));
                             pnl.Controls.Add(_getFunctionLabel(func.Name + "(", Color.Black));
 
+                            // call button
+                            var btn = new Button();
+                            btn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+                            btn.Margin = new System.Windows.Forms.Padding(0);
+                            btn.Text = "Call";
+                            btn.AutoSize = true;
+
                             var args = new List<Control>();
                             for (int i = 0; i < func.Arguments.Count; i++)
                             {
@@ -85,6 +93,10 @@ namespace Sharer.NETTest
                                 pnl.Controls.Add(_getFunctionLabel(arg.Type.ToString(), Color.Purple));
                                 pnl.Controls.Add(_getFunctionLabel(arg.Name + " = ", Color.Black));
                                 var box = _getFunctionTextbox();
+
+                                // Send command with enter button
+                                box.KeyDown += (object sender, KeyEventArgs e) => { if (e.KeyCode == Keys.Enter) btn.PerformClick(); };
+
                                 pnl.Controls.Add(box);
                                 args.Add(box);
                                 if (i != func.Arguments.Count - 1)
@@ -95,11 +107,6 @@ namespace Sharer.NETTest
 
                             pnl.Controls.Add(_getFunctionLabel(")", Color.Black));
 
-                            var btn = new Button();
-                            btn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-                            btn.Margin = new System.Windows.Forms.Padding(0);
-                            btn.Text = "Call";
-                            btn.AutoSize = true;
 
                             pnl.Controls.Add(btn);
 
@@ -112,11 +119,15 @@ namespace Sharer.NETTest
                             {
                                 if (Connected)
                                 {
+                                    Cursor = Cursors.WaitCursor;
                                     try
                                     {
-                                        var ret = _connection.Call(func.Name, args.Select((x) => x.Text).ToArray());
+                                        var sw = Stopwatch.StartNew();
+                                        var ret = _connection.Call(func.Name,TimeSpan.FromSeconds(10), args.Select((x) => x.Text).ToArray());
 
-                                        if(ret.Status == Command.SharerCallFunctionStatus.OK)
+                                        var t = sw.Elapsed;
+
+                                        if (ret.Status == Command.SharerCallFunctionStatus.OK)
                                         {
                                             lblResult.ForeColor = Color.Black;
                                         }
@@ -125,7 +136,7 @@ namespace Sharer.NETTest
                                             lblResult.ForeColor = Color.Red;
                                         }
 
-                                        lblResult.Text = ret.ToString();
+                                        lblResult.Text = ret.ToString() + " (" + t.ToString(@"ss\:fff") + ")" ;
                                     }
                                     catch(Exception ex)
                                     {
@@ -135,6 +146,10 @@ namespace Sharer.NETTest
                                         {
                                             lblResult.Text += " (" + ex.InnerException.Message + ")";
                                         }
+                                    }
+                                    finally
+                                    {
+                                        Cursor = Cursors.Default;
                                     }
                                 }
                             };
@@ -167,6 +182,7 @@ namespace Sharer.NETTest
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
                 cbPort.Items.Clear();
                 cbPort.Items.AddRange(SharerConnection.GetSerialPortNames());
                 refreshGUI();
@@ -175,12 +191,17 @@ namespace Sharer.NETTest
             {
                 handleException(ex);
             }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
                 if (_connection != null)
                 {
                     _connection.Disconnect();
@@ -190,13 +211,15 @@ namespace Sharer.NETTest
 
                 _connection.Connect();
 
-                _connection.RefreshFunctions();
-
                 refreshGUI();
             }
             catch (Exception ex)
             {
                 handleException(ex);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
         #endregion
@@ -206,6 +229,7 @@ namespace Sharer.NETTest
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
                 if (_connection != null)
                 {
                     _connection.Disconnect();
@@ -216,6 +240,10 @@ namespace Sharer.NETTest
             {
                 handleException(ex);
             }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
 
@@ -223,6 +251,7 @@ namespace Sharer.NETTest
         {
             try
             {
+                Cursor = Cursors.WaitCursor;
                 if (_connection != null && _connection.Connected)
                 {
                     _connection.RefreshFunctions();
@@ -233,26 +262,12 @@ namespace Sharer.NETTest
             {
                 handleException(ex);
             }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
         #endregion
 
-        private void btnCall0_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_connection != null && _connection.Connected)
-                {
-                    var ans=_connection.Call("myFunc", 10, 20);
-
-                    MessageBox.Show(ans.ToString());
-
-                }
-                refreshGUI();
-            }
-            catch (Exception ex)
-            {
-                handleException(ex);
-            }
-        }
     }
 }
