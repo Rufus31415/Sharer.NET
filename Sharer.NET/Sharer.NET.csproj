@@ -40,8 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\Commands\SharerReadyCommand.cs" />
+    <Compile Include="Command\Commands\SharerWriteVariablesCommand.cs" />
+    <Compile Include="Command\Commands\SharerReadVariablesCommand.cs" />
     <Compile Include="Command\Commands\SharerGetAllFunctionsPrototypeCommand.cs" />
     <Compile Include="Command\Commands\SharerCallFunctionCommand.cs" />
+    <Compile Include="Command\Commands\SharerGetAllVariablesDefinitionCommand.cs" />
     <Compile Include="Command\SharerSentCommand.cs" />
     <Compile Include="Command\SharerCommand.cs" />
     <Compile Include="FunctionCall\SharerFunction.cs" />
@@ -49,6 +53,7 @@
     <Compile Include="FunctionCall\SharerType.cs" />
     <Compile Include="SharerConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Variables\SharerVariable.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

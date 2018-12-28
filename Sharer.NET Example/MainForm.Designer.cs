@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.cbPort = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -35,6 +36,15 @@
             this.btnConnect = new System.Windows.Forms.Button();
             this.grpConnect = new System.Windows.Forms.GroupBox();
             this.grpSession = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.pnlVariables = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanel4 = new System.Windows.Forms.FlowLayoutPanel();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.textBox5 = new System.Windows.Forms.TextBox();
+            this.button5 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.btnRead = new System.Windows.Forms.Button();
+            this.label19 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.pnlFunctions = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
@@ -53,13 +63,17 @@
             this.label9 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
-            this.btnGetFunctionList = new System.Windows.Forms.Button();
             this.btnCall0 = new System.Windows.Forms.Button();
-            this.btnDisconnect = new System.Windows.Forms.Button();
+            this.btnGetFunctionList = new System.Windows.Forms.Button();
             this.txtNbFunctions = new System.Windows.Forms.Label();
+            this.btnDisconnect = new System.Windows.Forms.Button();
+            this.tt = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.udBaud)).BeginInit();
             this.grpConnect.SuspendLayout();
             this.grpSession.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.pnlVariables.SuspendLayout();
+            this.flowLayoutPanel4.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.pnlFunctions.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -73,6 +87,7 @@
             this.cbPort.Name = "cbPort";
             this.cbPort.Size = new System.Drawing.Size(83, 21);
             this.cbPort.TabIndex = 0;
+            this.cbPort.Text = "COM10";
             this.cbPort.DropDown += new System.EventHandler(this.cbPort_DropDown);
             // 
             // label1
@@ -146,24 +161,122 @@
             this.grpSession.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpSession.Controls.Add(this.groupBox2);
             this.grpSession.Controls.Add(this.groupBox1);
-            this.grpSession.Controls.Add(this.btnCall0);
+            this.grpSession.Controls.Add(this.btnGetFunctionList);
             this.grpSession.Controls.Add(this.btnDisconnect);
-            this.grpSession.Controls.Add(this.txtNbFunctions);
             this.grpSession.Location = new System.Drawing.Point(12, 88);
             this.grpSession.Name = "grpSession";
-            this.grpSession.Size = new System.Drawing.Size(1023, 404);
+            this.grpSession.Size = new System.Drawing.Size(1023, 472);
             this.grpSession.TabIndex = 4;
             this.grpSession.TabStop = false;
             this.grpSession.Text = "Session";
             // 
-            // groupBox1
+            // groupBox2
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.pnlVariables);
+            this.groupBox2.Controls.Add(this.button5);
+            this.groupBox2.Controls.Add(this.button4);
+            this.groupBox2.Controls.Add(this.btnRead);
+            this.groupBox2.Controls.Add(this.label19);
+            this.groupBox2.Location = new System.Drawing.Point(6, 296);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(1011, 161);
+            this.groupBox2.TabIndex = 6;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Variables";
+            // 
+            // pnlVariables
+            // 
+            this.pnlVariables.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlVariables.AutoScroll = true;
+            this.pnlVariables.Controls.Add(this.flowLayoutPanel4);
+            this.pnlVariables.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.pnlVariables.Location = new System.Drawing.Point(9, 50);
+            this.pnlVariables.Name = "pnlVariables";
+            this.pnlVariables.Size = new System.Drawing.Size(996, 98);
+            this.pnlVariables.TabIndex = 5;
+            // 
+            // flowLayoutPanel4
+            // 
+            this.flowLayoutPanel4.AutoSize = true;
+            this.flowLayoutPanel4.Controls.Add(this.checkBox1);
+            this.flowLayoutPanel4.Controls.Add(this.textBox5);
+            this.flowLayoutPanel4.Location = new System.Drawing.Point(3, 3);
+            this.flowLayoutPanel4.Name = "flowLayoutPanel4";
+            this.flowLayoutPanel4.Size = new System.Drawing.Size(121, 20);
+            this.flowLayoutPanel4.TabIndex = 5;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(3, 3);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(15, 14);
+            this.checkBox1.TabIndex = 6;
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // textBox5
+            // 
+            this.textBox5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox5.Location = new System.Drawing.Point(21, 0);
+            this.textBox5.Margin = new System.Windows.Forms.Padding(0);
+            this.textBox5.Name = "textBox5";
+            this.textBox5.Size = new System.Drawing.Size(100, 20);
+            this.textBox5.TabIndex = 1;
+            // 
+            // button5
+            // 
+            this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button5.Location = new System.Drawing.Point(246, -24);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(117, 23);
+            this.button5.TabIndex = 3;
+            this.button5.Text = "call 0";
+            this.button5.UseVisualStyleBackColor = true;
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(132, 19);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(117, 23);
+            this.button4.TabIndex = 3;
+            this.button4.Text = "Write";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.btnWrite);
+            // 
+            // btnRead
+            // 
+            this.btnRead.Location = new System.Drawing.Point(9, 19);
+            this.btnRead.Name = "btnRead";
+            this.btnRead.Size = new System.Drawing.Size(117, 23);
+            this.btnRead.TabIndex = 3;
+            this.btnRead.Text = "Read";
+            this.btnRead.UseVisualStyleBackColor = true;
+            this.btnRead.Click += new System.EventHandler(this.btnRead_Click);
+            // 
+            // label19
+            // 
+            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(182, -24);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(19, 13);
+            this.label19.TabIndex = 1;
+            this.label19.Text = "fnt";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.pnlFunctions);
-            this.groupBox1.Controls.Add(this.btnGetFunctionList);
+            this.groupBox1.Controls.Add(this.btnCall0);
+            this.groupBox1.Controls.Add(this.txtNbFunctions);
             this.groupBox1.Location = new System.Drawing.Point(6, 48);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(1011, 241);
@@ -361,9 +474,19 @@
             this.label10.TabIndex = 0;
             this.label10.Text = "= 17";
             // 
+            // btnCall0
+            // 
+            this.btnCall0.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCall0.Location = new System.Drawing.Point(246, 56);
+            this.btnCall0.Name = "btnCall0";
+            this.btnCall0.Size = new System.Drawing.Size(117, 23);
+            this.btnCall0.TabIndex = 3;
+            this.btnCall0.Text = "call 0";
+            this.btnCall0.UseVisualStyleBackColor = true;
+            // 
             // btnGetFunctionList
             // 
-            this.btnGetFunctionList.Location = new System.Drawing.Point(9, 21);
+            this.btnGetFunctionList.Location = new System.Drawing.Point(123, 19);
             this.btnGetFunctionList.Name = "btnGetFunctionList";
             this.btnGetFunctionList.Size = new System.Drawing.Size(117, 23);
             this.btnGetFunctionList.TabIndex = 3;
@@ -371,15 +494,15 @@
             this.btnGetFunctionList.UseVisualStyleBackColor = true;
             this.btnGetFunctionList.Click += new System.EventHandler(this.btnGetFunctionList_Click);
             // 
-            // btnCall0
+            // txtNbFunctions
             // 
-            this.btnCall0.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCall0.Location = new System.Drawing.Point(310, 310);
-            this.btnCall0.Name = "btnCall0";
-            this.btnCall0.Size = new System.Drawing.Size(117, 23);
-            this.btnCall0.TabIndex = 3;
-            this.btnCall0.Text = "call 0";
-            this.btnCall0.UseVisualStyleBackColor = true;
+            this.txtNbFunctions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtNbFunctions.AutoSize = true;
+            this.txtNbFunctions.Location = new System.Drawing.Point(182, 56);
+            this.txtNbFunctions.Name = "txtNbFunctions";
+            this.txtNbFunctions.Size = new System.Drawing.Size(19, 13);
+            this.txtNbFunctions.TabIndex = 1;
+            this.txtNbFunctions.Text = "fnt";
             // 
             // btnDisconnect
             // 
@@ -391,21 +514,11 @@
             this.btnDisconnect.UseVisualStyleBackColor = true;
             this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
             // 
-            // txtNbFunctions
-            // 
-            this.txtNbFunctions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtNbFunctions.AutoSize = true;
-            this.txtNbFunctions.Location = new System.Drawing.Point(246, 310);
-            this.txtNbFunctions.Name = "txtNbFunctions";
-            this.txtNbFunctions.Size = new System.Drawing.Size(19, 13);
-            this.txtNbFunctions.TabIndex = 1;
-            this.txtNbFunctions.Text = "fnt";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1047, 504);
+            this.ClientSize = new System.Drawing.Size(1047, 605);
             this.Controls.Add(this.grpSession);
             this.Controls.Add(this.grpConnect);
             this.Name = "MainForm";
@@ -414,8 +527,14 @@
             this.grpConnect.ResumeLayout(false);
             this.grpConnect.PerformLayout();
             this.grpSession.ResumeLayout(false);
-            this.grpSession.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.pnlVariables.ResumeLayout(false);
+            this.pnlVariables.PerformLayout();
+            this.flowLayoutPanel4.ResumeLayout(false);
+            this.flowLayoutPanel4.PerformLayout();
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.pnlFunctions.ResumeLayout(false);
             this.pnlFunctions.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -457,6 +576,16 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.FlowLayoutPanel pnlVariables;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel4;
+        private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnRead;
+        private System.Windows.Forms.ToolTip tt;
     }
 }
 

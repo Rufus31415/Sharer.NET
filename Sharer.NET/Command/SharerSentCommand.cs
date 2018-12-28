@@ -31,9 +31,12 @@ namespace Sharer.Command
 
         private bool _AnswerReceived;
 
-        internal void EndReceive(bool success)
+        public Exception Exception { get; private set; }
+
+        internal void EndReceive(bool success, Exception ex = null)
         {
             this._AnswerReceived = success;
+            this.Exception = ex;
 
             _autoResetEvent.Set();
         }

@@ -83,7 +83,7 @@ namespace Sharer.Command
                     // if end of name
                     if (b == 0)
                     {
-                        _currentFunction.Name = System.Text.Encoding.Default.GetString(_nameByte.ToArray(), 0, _nameByte.Count);
+                        _currentFunction.Name = System.Text.Encoding.UTF8.GetString(_nameByte.ToArray(), 0, _nameByte.Count);
                         if (_nbArguments > 0) // if this function has arguments
                         {
                             _receivedStep = Steps.ArgumentType;

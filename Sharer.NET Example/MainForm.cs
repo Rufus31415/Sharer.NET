@@ -23,11 +23,38 @@ namespace Sharer.NETTest
         {
             InitializeComponent();
             refreshGUI();
+
+        }
+
+        private void _connection_InternalError(object o, ErrorEventArgs e)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(()=>_connection_InternalError(o, e)));
+                return;
+            }
+            MessageBox.Show("Internal error", e.Exception.ToString());
+        }
+
+        private void _connection_Ready(object sender, EventArgs e)
+        {
+            refreshGUI();
         }
 
         private Label _getFunctionLabel(string text, Color color)
         {
             var ctrl = new Label();
+            ctrl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            ctrl.AutoSize = true;
+            ctrl.Margin = new System.Windows.Forms.Padding(0, 5, 0, 0);
+            ctrl.Text = text;
+            ctrl.ForeColor = color;
+            return ctrl;
+        }
+
+        private CheckBox _getFunctionCheckbox(string text, Color color)
+        {
+            var ctrl = new CheckBox();
             ctrl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             ctrl.AutoSize = true;
             ctrl.Margin = new System.Windows.Forms.Padding(0, 5, 0, 0);
@@ -56,6 +83,12 @@ namespace Sharer.NETTest
 
         private void refreshGUI()
         {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(()=>refreshGUI()));
+                return;
+            }
+
             try
             {
                 grpConnect.Enabled = !Connected;
@@ -70,6 +103,8 @@ namespace Sharer.NETTest
                     {
                         this.pnlFunctions.SuspendLayout();
                         this.pnlFunctions.Controls.Clear();
+                        this.pnlVariables.SuspendLayout();
+                        this.pnlVariables.Controls.Clear();
 
                         foreach (var func in _connection.Functions)
                         {
@@ -95,7 +130,7 @@ namespace Sharer.NETTest
                                 var box = _getFunctionTextbox();
 
                                 // Send command with enter button
-                                box.KeyDown += (object sender, KeyEventArgs e) => { if (e.KeyCode == Keys.Enter) btn.PerformClick(); };
+                                box.KeyUp += (object sender, KeyEventArgs e) => { if (e.KeyCode == Keys.Enter) btn.PerformClick(); };
 
                                 pnl.Controls.Add(box);
                                 args.Add(box);
@@ -123,7 +158,7 @@ namespace Sharer.NETTest
                                     try
                                     {
                                         var sw = Stopwatch.StartNew();
-                                        var ret = _connection.Call(func.Name,TimeSpan.FromSeconds(10), args.Select((x) => x.Text).ToArray());
+                                        var ret = _connection.Call(func.Name, TimeSpan.FromSeconds(10), args.Select((x) => x.Text).ToArray());
 
                                         var t = sw.Elapsed;
 
@@ -136,13 +171,13 @@ namespace Sharer.NETTest
                                             lblResult.ForeColor = Color.Red;
                                         }
 
-                                        lblResult.Text = ret.ToString() + " (" + t.ToString(@"ss\:fff") + ")" ;
+                                        lblResult.Text = ret.ToString() + " (" + t.ToString(@"ss\:fff") + ")";
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         lblResult.ForeColor = Color.Red;
                                         lblResult.Text = ex.Message;
-                                        if(ex.InnerException != null)
+                                        if (ex.InnerException != null)
                                         {
                                             lblResult.Text += " (" + ex.InnerException.Message + ")";
                                         }
@@ -154,14 +189,43 @@ namespace Sharer.NETTest
                                 }
                             };
 
-                             pnl.AutoSize = true;
-                           this.pnlFunctions.Controls.Add(pnl);
+                            pnl.AutoSize = true;
+                            this.pnlFunctions.Controls.Add(pnl);
+                        }
+
+                        foreach (var var in _connection.Variables)
+                        {
+                            var pnl = new System.Windows.Forms.FlowLayoutPanel();
+
+                            var chk = _getFunctionCheckbox(var.Type.ToString(), Color.Purple);
+                            chk.Name = var.Name;
+                            chk.Checked = true;
+                            var lbl = _getFunctionLabel(var.Name + " =", Color.Black);
+                            pnl.Controls.Add(chk);
+                            pnl.Controls.Add(lbl);
+
+                            lbl.Click += (object sender, EventArgs e) => chk.Checked = !chk.Checked;
+
+                             var txt = _getFunctionTextbox();
+
+                            pnl.Controls.Add(txt);
+
+                            txt.KeyUp += (object sender, KeyEventArgs e) =>
+                            {
+                                chk.Checked = !string.IsNullOrEmpty(txt.Text);
+                                txt.ForeColor = Color.Black;
+                                tt.SetToolTip(txt, "Ready");
+                            };
+
+                            pnl.AutoSize = true;
+                            this.pnlVariables.Controls.Add(pnl);
                         }
 
                     }
                     finally
                     {
                         this.pnlFunctions.ResumeLayout(true);
+                        this.pnlVariables.ResumeLayout(true);
 
                     }
                 }
@@ -208,6 +272,8 @@ namespace Sharer.NETTest
                 }
 
                 _connection = new SharerConnection(cbPort.Text, (int)udBaud.Value);
+                _connection.Ready += _connection_Ready;
+                _connection.InternalError += _connection_InternalError;
 
                 _connection.Connect();
 
@@ -255,6 +321,7 @@ namespace Sharer.NETTest
                 if (_connection != null && _connection.Connected)
                 {
                     _connection.RefreshFunctions();
+                    _connection.RefreshVariables();
                 }
                 refreshGUI();
             }
@@ -269,5 +336,89 @@ namespace Sharer.NETTest
         }
         #endregion
 
+        private void btnWrite(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                if (_connection != null && _connection.Connected)
+                {
+                    var names = new List<string>();
+                    var txts = new List<TextBox>();
+                    var values = new List<Command.SharerWriteValue>();
+
+                    foreach (var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
+                    {
+                        var chk = pnl.Controls.OfType<CheckBox>().First();
+                        if (chk.Checked)
+                        {
+                            names.Add(chk.Name);
+                            var txt = pnl.Controls.OfType<TextBox>().First();
+                            txts.Add(txt);
+                            values.Add(new Command.SharerWriteValue(chk.Name, txt.Text));
+                        }
+                    }
+
+
+                    var allSuccess= _connection.WriteVariables(values);
+
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        txts[i].ForeColor = values[i].Status == Command.SharerWriteVariableStatus.OK ? Color.Black : Color.Red;
+                        tt.SetToolTip(txts[i], values[i].Status.ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                handleException(ex);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+
+
+        private void btnRead_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                if (_connection != null && _connection.Connected)
+                {
+                    var names = new List<string>();
+                    var txts = new List<TextBox>();
+
+                    foreach(var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
+                    {
+                       var chk= pnl.Controls.OfType<CheckBox>().First();
+                        if (chk.Checked)
+                        {
+                            names.Add(chk.Name);
+                            txts.Add(pnl.Controls.OfType<TextBox>().First());
+                        }
+                    }
+
+                   var values= _connection.ReadVariables(names.ToArray());
+
+                    for(int i = 0; i < values.Count; i++)
+                    {
+                        txts[i].Text = values[i].ToString();
+                        txts[i].ForeColor = values[i].Status == Command.SharerReadVariableStatus.OK ? Color.Black : Color.Red;
+                        tt.SetToolTip(txts[i], values[i].Status.ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                handleException(ex);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
     }
 }

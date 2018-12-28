@@ -78,7 +78,7 @@ namespace Sharer.FunctionCall
                     writer.Write(UInt32.Parse(value.ToString()));
                     break;
                 case SharerType.@float:
-                    writer.Write(float.Parse(value.ToString()));
+                    writer.Write(float.Parse(value.ToString().Replace(",","."), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 case SharerType.int64:
                     writer.Write(Int64.Parse(value.ToString()));
@@ -87,7 +87,7 @@ namespace Sharer.FunctionCall
                     writer.Write(UInt64.Parse(value.ToString()));
                     break;
                 case SharerType.@double:
-                    writer.Write(Double.Parse(value.ToString()));
+                    writer.Write(double.Parse(value.ToString().Replace(",", "."), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture));
                     break;
                 default:
                     throw new Exception("Type " + type.ToString() + " not supported");

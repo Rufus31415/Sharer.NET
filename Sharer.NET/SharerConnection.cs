@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Sharer.FunctionCall;
 using Sharer.Command;
 using System.IO;
+using Sharer.Variables;
 
 namespace Sharer
 {
@@ -15,8 +16,13 @@ namespace Sharer
     /// </summary>
     public class SharerConnection
     {
+        private Dictionary<SharerCommandID, Type> _notificationCommand = new Dictionary<SharerCommandID, Type>()
+        {
+            { SharerCommandID.Ready, typeof(SharerReadyCommand)},
+        };
+
         private const Byte SHARER_START_COMMAND_CHAR = 0x92;
-        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 5);
+        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 1);
 
         private SerialPort _serialPort = new SerialPort();
 
@@ -78,7 +84,7 @@ namespace Sharer
                 _receiveStep = ReceiveSteps.Free;
                 if(_currentCommand != null)
                 {
-                    _currentCommand.EndReceive(false);
+                    _currentCommand.EndReceive(false, ex);
                     _currentCommand = null;
                 }
             }
@@ -108,19 +114,28 @@ namespace Sharer
 
                     lock (_sentCommands)
                     {
-                        _currentCommand = _sentCommands.FirstOrDefault((x) => x.CommandID == _lastCommandID && x.SentID == b);
-                    }
+                        // command without request
+                        if (_notificationCommand.ContainsKey(_lastCommandID))
+                        {
+                            _currentCommand = (SharerSentCommand)Activator.CreateInstance(_notificationCommand[_lastCommandID]);
+                            _receiveStep = ReceiveSteps.Body;
+                        }
+                        else
+                        {
+                            _currentCommand = _sentCommands.FirstOrDefault((x) => x.CommandID == _lastCommandID && x.SentID == b);
 
-                    if (_currentCommand == null)
-                    {
-                        _receiveStep = ReceiveSteps.Free;
+                            if (_currentCommand == null)
+                            {
+                                _receiveStep = ReceiveSteps.Free;
 
-                        Console.WriteLine("Command not found in history");
-                        // to do : handle unfound command in the history
-                    }
-                    else
-                    {
-                        _receiveStep = ReceiveSteps.Body;
+                                throw new Exception("Command ID " + _lastCommandID + " not found in history");
+                            }
+                            else
+                            {
+                                _sentCommands.Remove(_currentCommand);
+                                _receiveStep = ReceiveSteps.Body;
+                            }
+                        }
                     }
                     break;
                 case ReceiveSteps.Body:
@@ -131,6 +146,16 @@ namespace Sharer
                     {
                         _currentCommand.EndReceive(true); // indicate that the command has been received
                         _receiveStep = ReceiveSteps.Free;
+
+                        switch (_currentCommand.CommandID)
+                        {
+                            case SharerCommandID.Ready:
+                                AsyncNotifyReady();
+                                break;
+                            case SharerCommandID.Error:
+
+                                break;
+                        }
                     }
                     break;
                 default:
@@ -146,13 +171,50 @@ namespace Sharer
             }
         }
 
+        private void AsyncNotifyReady()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    try
+                    {
+                        if (RefreshFunctionListOnReady) RefreshFunctions();
+                        if (RefreshVariableListOnReady) RefreshVariables();
+                    }
+                    finally
+                    {
+                        try { Ready?.Invoke(this, EventArgs.Empty); }
+                        catch { }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    RaiseInternalError(ex);
+                }
+            });
+        }
+
+       void RaiseInternalError(Exception ex)
+        {
+            try { InternalError?.Invoke(this, new ErrorEventArgs(ex)); }
+            catch { }
+        }
+
+        public Boolean RefreshVariableListOnReady { get; set; } = true;
+        public Boolean RefreshFunctionListOnReady { get; set; } = true;
+
+        public event EventHandler Ready;
+
+        public delegate void InternalErrorEventHandler(object o, ErrorEventArgs e);
+        public event InternalErrorEventHandler InternalError;
+
 
         public void Connect()
         {
             Disconnect();
 
             _serialPort.Open();
-
         }
 
 
@@ -180,7 +242,8 @@ namespace Sharer
             if (!Connected) throw new Exception("Not connected");
         }
 
-       public List<SharerFunction> Functions = new List<SharerFunction>();
+        public List<SharerFunction> Functions = new List<SharerFunction>();
+        public List<SharerVariable> Variables = new List<SharerVariable>();
 
         public void RefreshFunctions()
         {
@@ -196,14 +259,135 @@ namespace Sharer
 
             if (!success)
             {
-                throw new Exception("Error while refreshing function list");
+                throw new Exception("Error while refreshing function list", cmd.Exception);
             }
 
             Functions.Clear();
             Functions.AddRange(cmd.Functions);
         }
 
-        public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName,TimeSpan timeout, params object[] arguments)
+        public void RefreshVariables()
+        {
+            assertConnected();
+
+            var lst = new List<SharerVariable>();
+
+            var cmd = new SharerGetAllVariablesDefinitionCommand();
+
+            sendCommand(cmd);
+
+            bool success = cmd.WaitAnswer(DEFAULT_TIMEOUT);
+
+            if (!success)
+            {
+                throw new Exception("Error while refreshing variable list", cmd.Exception);
+            }
+
+            Variables.Clear();
+            Variables.AddRange(cmd.Variables);
+        }
+        public List<SharerReadVariableReturn> ReadVariables(IEnumerable<SharerVariable> variables)
+        {
+            if (variables == null) throw new ArgumentNullException("variables");
+
+            return ReadVariables(variables.Select((x) => x.Name).ToArray());
+        }
+
+
+        public List<SharerReadVariableReturn> ReadVariables(IEnumerable<string> names)
+        {
+            assertConnected();
+
+            if (names == null) throw new ArgumentNullException("names");
+            if (names.Count() == 0) return new List<SharerReadVariableReturn>();
+
+            var ids = new short[names.Count()];
+
+            var types = new SharerType[names.Count()];
+
+            for(int i = 0; i < names.Count(); i++)
+            {
+                ids[i] = (short)Variables.FindIndex((x) => string.Equals(x.Name, names.ElementAt(i)));
+                if (ids[i] < 0) throw new Exception(names.ElementAt(i) + " not found in variables");
+                types[i] = Variables[ids[i]].Type;
+            }
+
+            byte[] buffer;
+
+            using (MemoryStream memory = new MemoryStream())
+            {
+                using (BinaryWriter writer = new BinaryWriter(memory))
+                {
+                    writer.Write((short)ids.Length);
+                    foreach(var id in ids)
+                    {
+                        writer.Write(id);
+                    }
+                        buffer = memory.ToArray();
+                }
+            }
+
+
+            var cmd = new SharerReadVariablesCommand(buffer, types);
+
+            sendCommand(cmd);
+
+            bool success = cmd.WaitAnswer(DEFAULT_TIMEOUT);
+
+            if (!success)
+            {
+                throw new Exception("Error while writing variables", cmd.Exception);
+            }
+
+            return cmd.Values;
+        }
+
+
+        public bool WriteVariables(IEnumerable<SharerWriteValue> values)
+        {
+            assertConnected();
+
+            if (values == null) throw new ArgumentNullException("values");
+            if (values.Count() == 0) return true;
+
+            var valueToWrite = new List<SharerWriteValue>(values.Count());
+
+            foreach(var value in values)
+            {
+                var index = Variables.FindIndex((x) => string.Equals(x.Name, value.Name));
+
+                if (index < 0)
+                {
+                    value.Status = SharerWriteVariableStatus.NotFound;
+                    value.Type = SharerType.@void;
+                }
+                else
+                {
+                    value.Index = index;
+                    value.Type = Variables[index].Type;
+                    valueToWrite.Add(value);
+                }
+            }
+
+            // if all not found
+            if (valueToWrite.Count == 0) return false;
+
+            var cmd = new SharerWriteVariablesCommand(valueToWrite);
+
+            sendCommand(cmd);
+
+            bool success = cmd.WaitAnswer(DEFAULT_TIMEOUT);
+
+            if (!success)
+            {
+                throw new Exception("Error while writting variables", cmd.Exception);
+            }
+
+
+            return values.All((x) => x.Status == SharerWriteVariableStatus.OK);
+         }
+
+            public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName,TimeSpan timeout, params object[] arguments)
         {
             assertConnected();
 
@@ -272,12 +456,10 @@ namespace Sharer
                     }
 
                 
-                buffer= memory.GetBuffer().Take((int)memory.Length).ToArray();
+                buffer= memory.ToArray();
 
                 }
             }
-
-            var lst = new List<SharerFunction>();
 
             var cmd = new SharerCallFunctionCommand<ReturnType>(buffer, function.ReturnType);
 
@@ -287,7 +469,7 @@ namespace Sharer
 
             if (!success)
             {
-                throw new Exception("Error while calling function " + functionName);
+                throw new Exception("Error while calling function " + functionName, cmd.Exception);
             }
 
             return cmd.Return;
@@ -341,5 +523,15 @@ namespace Sharer
             }
         }
 
+    }
+}
+
+public class ErrorEventArgs : EventArgs
+{
+    public readonly Exception Exception;
+
+    public ErrorEventArgs(Exception ex)
+    {
+        Exception = ex;
     }
 }

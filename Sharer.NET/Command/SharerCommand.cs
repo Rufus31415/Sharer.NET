@@ -13,9 +13,12 @@ namespace Sharer.Command
         FunctionPrototype,
         AllFunctionsPrototype,
         CallFunction,
-        ReadVariable,
-        WriteVariable,
-        SubscribeVariable,
-        UnsubscribeVariable,
+        AllVariablesDefinition,
+        ReadVariables,
+        WriteVariables,
+
+        NotificationCommand = 0x80,
+        Error = 0x80,
+        Ready
     }
 }
