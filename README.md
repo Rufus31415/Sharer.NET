@@ -73,3 +73,33 @@ void loop() {
 	Sharer.run();
 }
 ```
+## Usage
+
+### Download and install the library
+The library should be downloaded from GitHub and the Sharer folder copied into the \libraries folder.
+
+### Initialisation
+The communication between the .NET application and the Arduino is over the Serial protocole.
+The Arduino code should initialize Sharer in the setup() function.
+``` C++
+#include <Sharer.h>
+
+void setup() {
+	// Initialize with Serial
+	Sharer.init(115200);
+	
+	// Initialize with another Serial interface
+	Serial2.begin(9600);
+	Sharer.init(Serial2);
+}
+```
+
+The loop() function should call Sharer.run().
+``` C++
+void loop() {
+	Sharer.run();
+}
+```
+
+### Share a function
+ to be continued...
