@@ -7,6 +7,9 @@
 Sharer is an Arduino library that facilitates the communication between a PC and an Arduino board.
 You chose the functions and variables you want to share with your desktop application and your arduino board. Functions can be easily remotly called.
 
+
+![Sharer](https://raw.githubusercontent.com/Rufus31415/Sharer.NET/master/Resources/RemoteFunctionCall.png)
+
 ## .NET C# code example
 
 
