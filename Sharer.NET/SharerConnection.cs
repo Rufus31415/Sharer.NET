@@ -22,7 +22,7 @@ namespace Sharer
         };
 
         private const Byte SHARER_START_COMMAND_CHAR = 0x92;
-        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 1);
+        private TimeSpan DEFAULT_TIMEOUT = new TimeSpan(0, 0, 2);
 
         private SerialPort _serialPort = new SerialPort();
 
