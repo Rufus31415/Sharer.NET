@@ -10,6 +10,14 @@ You chose the functions and variables you want to share with your desktop applic
 
 ![Sharer](https://raw.githubusercontent.com/Rufus31415/Sharer.NET/master/Resources/RemoteFunctionCall.png)
 
+Tested on boards :
+- Arduino UNO
+- Arduino NANO
+- Arduino MEGA
+- Arduino DUE
+
+
+
 ## .NET C# code example
 
 
