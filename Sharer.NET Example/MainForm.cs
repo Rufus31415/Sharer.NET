@@ -22,24 +22,16 @@ namespace Sharer.NETTest
         public MainForm()
         {
             InitializeComponent();
-            refreshGUI();
 
-        }
-
-        private void _connection_InternalError(object o, ErrorEventArgs e)
-        {
-            if (this.InvokeRequired)
+            if (Properties.Settings.Default.ComPort != null && Properties.Settings.Default.ComPort.StartsWith("COM"))
             {
-                this.Invoke((MethodInvoker)(()=>_connection_InternalError(o, e)));
-                return;
+                cbPort.Text = Properties.Settings.Default.ComPort;
             }
-            MessageBox.Show("Internal error", e.Exception.ToString());
+
+            refreshGUI();
+
         }
 
-        private void _connection_Ready(object sender, EventArgs e)
-        {
-            refreshGUI();
-        }
 
         private Label _getFunctionLabel(string text, Color color)
         {
@@ -96,9 +88,6 @@ namespace Sharer.NETTest
 
                 if (Connected)
                 {
-                    txtNbFunctions.Text = _connection.Functions.Count.ToString();
-
-
                     try
                     {
                         this.pnlFunctions.SuspendLayout();
@@ -272,10 +261,13 @@ namespace Sharer.NETTest
                 }
 
                 _connection = new SharerConnection(cbPort.Text, (int)udBaud.Value);
-                _connection.Ready += _connection_Ready;
-                _connection.InternalError += _connection_InternalError;
+
+                _connection.UserDataReceived += _connection_UserDataReceived;
 
                 _connection.Connect();
+
+                Properties.Settings.Default.ComPort = cbPort.Text;
+                Properties.Settings.Default.Save();
 
                 refreshGUI();
             }
@@ -287,6 +279,21 @@ namespace Sharer.NETTest
             {
                 Cursor = Cursors.Default;
             }
+        }
+
+        private void _connection_UserDataReceived(object sender, UserDataReceivedEventArgs e)
+        {
+            var str = e.GetReader();
+            var txt = str.ReadString();
+
+
+            txt= BitConverter.ToString(e.Data);
+
+            this.Invoke(new Action(() =>
+            {
+                txtReceivedUserData.Text += txt + "\r\n";
+            }));
+            
         }
         #endregion
 
@@ -408,8 +415,16 @@ namespace Sharer.NETTest
                         txts[i].Text = values[i].ToString();
                         txts[i].ForeColor = values[i].Status == Command.SharerReadVariableStatus.OK ? Color.Black : Color.Red;
                         tt.SetToolTip(txts[i], values[i].Status.ToString());
+
+                        if (startRecord)
+                        {
+                            _record.Append(txts[i].Text);
+                            _record.Append(";");
+                        }
                     }
                 }
+
+                if (startRecord) _record.AppendLine();
             }
             catch (Exception ex)
             {
@@ -419,6 +434,54 @@ namespace Sharer.NETTest
             {
                 Cursor = Cursors.Default;
             }
+        }
+
+        private void chkRead_CheckedChanged(object sender, EventArgs e)
+        {
+            tmrRead.Enabled = chkRead.Checked;
+        }
+
+        private StringBuilder _record = new StringBuilder();
+
+        bool startRecord = false;
+        private void btnRecord_Click(object sender, EventArgs e)
+        {
+            if (!startRecord)
+            {
+                _record.Clear();
+                foreach (var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
+                {
+                    var chk = pnl.Controls.OfType<CheckBox>().First();
+                    if (chk.Checked)
+                    {
+                        _record.Append(chk.Name);
+                        _record.Append(";");
+                    }
+                }
+                _record.AppendLine();
+                startRecord = true;
+                btnRecord.Text = "Stop";
+            }
+            else
+            {
+                startRecord = false;
+                btnRecord.Text = "Record";
+            }
+        }
+
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(_record.ToString());
+        }
+
+        private void btnGetInfo_Click(object sender, EventArgs e)
+        {
+            var nfo = _connection.GetInfos();
+        }
+
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            _connection.WriteUserData(txtSend.Text);
         }
     }
 }

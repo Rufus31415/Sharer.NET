@@ -16,9 +16,9 @@ namespace Sharer.Command
         AllVariablesDefinition,
         ReadVariables,
         WriteVariables,
+        GetInfo,
 
         NotificationCommand = 0x80,
         Error = 0x80,
-        Ready
     }
 }

@@ -13,6 +13,8 @@ namespace Sharer.Command
 
         internal abstract byte[] ArgumentsToSend();
 
+        internal event EventHandler Timeouted;
+
         public byte SentID;
 
         public byte ReceiveID;
@@ -44,6 +46,8 @@ namespace Sharer.Command
         public bool WaitAnswer(TimeSpan timeout)
         {
           bool success = _autoResetEvent.WaitOne(timeout);
+
+          if (!success) Timeouted?.Invoke(this, EventArgs.Empty);
 
           return success && _AnswerReceived;
         }

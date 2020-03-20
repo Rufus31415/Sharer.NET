@@ -37,14 +37,18 @@
             this.grpConnect = new System.Windows.Forms.GroupBox();
             this.grpSession = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkRead = new System.Windows.Forms.CheckBox();
             this.pnlVariables = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel4 = new System.Windows.Forms.FlowLayoutPanel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.textBox5 = new System.Windows.Forms.TextBox();
             this.button5 = new System.Windows.Forms.Button();
+            this.btnCopy = new System.Windows.Forms.Button();
+            this.btnRecord = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.btnRead = new System.Windows.Forms.Button();
             this.label19 = new System.Windows.Forms.Label();
+            this.btnGetInfo = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.pnlFunctions = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
@@ -63,11 +67,13 @@
             this.label9 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
-            this.btnCall0 = new System.Windows.Forms.Button();
             this.btnGetFunctionList = new System.Windows.Forms.Button();
-            this.txtNbFunctions = new System.Windows.Forms.Label();
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.tt = new System.Windows.Forms.ToolTip(this.components);
+            this.tmrRead = new System.Windows.Forms.Timer(this.components);
+            this.txtSend = new System.Windows.Forms.TextBox();
+            this.btnSend = new System.Windows.Forms.Button();
+            this.txtReceivedUserData = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.udBaud)).BeginInit();
             this.grpConnect.SuspendLayout();
             this.grpSession.SuspendLayout();
@@ -161,7 +167,11 @@
             this.grpSession.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpSession.Controls.Add(this.txtReceivedUserData);
+            this.grpSession.Controls.Add(this.txtSend);
             this.grpSession.Controls.Add(this.groupBox2);
+            this.grpSession.Controls.Add(this.btnSend);
+            this.grpSession.Controls.Add(this.btnGetInfo);
             this.grpSession.Controls.Add(this.groupBox1);
             this.grpSession.Controls.Add(this.btnGetFunctionList);
             this.grpSession.Controls.Add(this.btnDisconnect);
@@ -177,8 +187,11 @@
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.chkRead);
             this.groupBox2.Controls.Add(this.pnlVariables);
             this.groupBox2.Controls.Add(this.button5);
+            this.groupBox2.Controls.Add(this.btnCopy);
+            this.groupBox2.Controls.Add(this.btnRecord);
             this.groupBox2.Controls.Add(this.button4);
             this.groupBox2.Controls.Add(this.btnRead);
             this.groupBox2.Controls.Add(this.label19);
@@ -188,6 +201,17 @@
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Variables";
+            // 
+            // chkRead
+            // 
+            this.chkRead.AutoSize = true;
+            this.chkRead.Location = new System.Drawing.Point(321, 22);
+            this.chkRead.Name = "chkRead";
+            this.chkRead.Size = new System.Drawing.Size(103, 17);
+            this.chkRead.TabIndex = 6;
+            this.chkRead.Text = "Continuous read";
+            this.chkRead.UseVisualStyleBackColor = true;
+            this.chkRead.CheckedChanged += new System.EventHandler(this.chkRead_CheckedChanged);
             // 
             // pnlVariables
             // 
@@ -240,6 +264,26 @@
             this.button5.Text = "call 0";
             this.button5.UseVisualStyleBackColor = true;
             // 
+            // btnCopy
+            // 
+            this.btnCopy.Location = new System.Drawing.Point(585, 18);
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(117, 23);
+            this.btnCopy.TabIndex = 3;
+            this.btnCopy.Text = "Copy record";
+            this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
+            // 
+            // btnRecord
+            // 
+            this.btnRecord.Location = new System.Drawing.Point(462, 19);
+            this.btnRecord.Name = "btnRecord";
+            this.btnRecord.Size = new System.Drawing.Size(117, 23);
+            this.btnRecord.TabIndex = 3;
+            this.btnRecord.Text = "Record";
+            this.btnRecord.UseVisualStyleBackColor = true;
+            this.btnRecord.Click += new System.EventHandler(this.btnRecord_Click);
+            // 
             // button4
             // 
             this.button4.Location = new System.Drawing.Point(132, 19);
@@ -270,16 +314,24 @@
             this.label19.TabIndex = 1;
             this.label19.Text = "fnt";
             // 
+            // btnGetInfo
+            // 
+            this.btnGetInfo.Location = new System.Drawing.Point(265, 19);
+            this.btnGetInfo.Name = "btnGetInfo";
+            this.btnGetInfo.Size = new System.Drawing.Size(75, 23);
+            this.btnGetInfo.TabIndex = 3;
+            this.btnGetInfo.Text = "Get Infos";
+            this.btnGetInfo.UseVisualStyleBackColor = true;
+            this.btnGetInfo.Click += new System.EventHandler(this.btnGetInfo_Click);
+            // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.pnlFunctions);
-            this.groupBox1.Controls.Add(this.btnCall0);
-            this.groupBox1.Controls.Add(this.txtNbFunctions);
-            this.groupBox1.Location = new System.Drawing.Point(6, 48);
+            this.groupBox1.Location = new System.Drawing.Point(6, 93);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1011, 241);
+            this.groupBox1.Size = new System.Drawing.Size(1011, 196);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Functions";
@@ -293,9 +345,9 @@
             this.pnlFunctions.Controls.Add(this.flowLayoutPanel1);
             this.pnlFunctions.Controls.Add(this.flowLayoutPanel3);
             this.pnlFunctions.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.pnlFunctions.Location = new System.Drawing.Point(9, 50);
+            this.pnlFunctions.Location = new System.Drawing.Point(9, 19);
             this.pnlFunctions.Name = "pnlFunctions";
-            this.pnlFunctions.Size = new System.Drawing.Size(996, 178);
+            this.pnlFunctions.Size = new System.Drawing.Size(996, 164);
             this.pnlFunctions.TabIndex = 5;
             // 
             // flowLayoutPanel1
@@ -474,16 +526,6 @@
             this.label10.TabIndex = 0;
             this.label10.Text = "= 17";
             // 
-            // btnCall0
-            // 
-            this.btnCall0.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCall0.Location = new System.Drawing.Point(246, 56);
-            this.btnCall0.Name = "btnCall0";
-            this.btnCall0.Size = new System.Drawing.Size(117, 23);
-            this.btnCall0.TabIndex = 3;
-            this.btnCall0.Text = "call 0";
-            this.btnCall0.UseVisualStyleBackColor = true;
-            // 
             // btnGetFunctionList
             // 
             this.btnGetFunctionList.Location = new System.Drawing.Point(123, 19);
@@ -494,16 +536,6 @@
             this.btnGetFunctionList.UseVisualStyleBackColor = true;
             this.btnGetFunctionList.Click += new System.EventHandler(this.btnGetFunctionList_Click);
             // 
-            // txtNbFunctions
-            // 
-            this.txtNbFunctions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtNbFunctions.AutoSize = true;
-            this.txtNbFunctions.Location = new System.Drawing.Point(182, 56);
-            this.txtNbFunctions.Name = "txtNbFunctions";
-            this.txtNbFunctions.Size = new System.Drawing.Size(19, 13);
-            this.txtNbFunctions.TabIndex = 1;
-            this.txtNbFunctions.Text = "fnt";
-            // 
             // btnDisconnect
             // 
             this.btnDisconnect.Location = new System.Drawing.Point(21, 19);
@@ -513,6 +545,35 @@
             this.btnDisconnect.Text = "Disconnect";
             this.btnDisconnect.UseVisualStyleBackColor = true;
             this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
+            // 
+            // tmrRead
+            // 
+            this.tmrRead.Tick += new System.EventHandler(this.btnRead_Click);
+            // 
+            // txtSend
+            // 
+            this.txtSend.Location = new System.Drawing.Point(442, 21);
+            this.txtSend.Name = "txtSend";
+            this.txtSend.Size = new System.Drawing.Size(185, 20);
+            this.txtSend.TabIndex = 7;
+            // 
+            // btnSend
+            // 
+            this.btnSend.Location = new System.Drawing.Point(633, 19);
+            this.btnSend.Name = "btnSend";
+            this.btnSend.Size = new System.Drawing.Size(89, 23);
+            this.btnSend.TabIndex = 3;
+            this.btnSend.Text = "Send user data";
+            this.btnSend.UseVisualStyleBackColor = true;
+            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            // 
+            // txtReceivedUserData
+            // 
+            this.txtReceivedUserData.Location = new System.Drawing.Point(756, 10);
+            this.txtReceivedUserData.Multiline = true;
+            this.txtReceivedUserData.Name = "txtReceivedUserData";
+            this.txtReceivedUserData.Size = new System.Drawing.Size(246, 77);
+            this.txtReceivedUserData.TabIndex = 8;
             // 
             // MainForm
             // 
@@ -527,6 +588,7 @@
             this.grpConnect.ResumeLayout(false);
             this.grpConnect.PerformLayout();
             this.grpSession.ResumeLayout(false);
+            this.grpSession.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.pnlVariables.ResumeLayout(false);
@@ -534,7 +596,6 @@
             this.flowLayoutPanel4.ResumeLayout(false);
             this.flowLayoutPanel4.PerformLayout();
             this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.pnlFunctions.ResumeLayout(false);
             this.pnlFunctions.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -556,8 +617,6 @@
         private System.Windows.Forms.GroupBox grpSession;
         private System.Windows.Forms.Button btnDisconnect;
         private System.Windows.Forms.Button btnGetFunctionList;
-        private System.Windows.Forms.Label txtNbFunctions;
-        private System.Windows.Forms.Button btnCall0;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox1;
@@ -586,6 +645,14 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button btnRead;
         private System.Windows.Forms.ToolTip tt;
+        private System.Windows.Forms.CheckBox chkRead;
+        private System.Windows.Forms.Timer tmrRead;
+        private System.Windows.Forms.Button btnCopy;
+        private System.Windows.Forms.Button btnRecord;
+        private System.Windows.Forms.Button btnGetInfo;
+        private System.Windows.Forms.TextBox txtReceivedUserData;
+        private System.Windows.Forms.TextBox txtSend;
+        private System.Windows.Forms.Button btnSend;
     }
 }
 

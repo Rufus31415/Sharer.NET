@@ -8,17 +8,18 @@ using Sharer.FunctionCall;
 using Sharer.Command;
 using System.IO;
 using Sharer.Variables;
+using System.Diagnostics;
 
 namespace Sharer
 {
     /// <summary>
     /// Connection to an Arduino Device
     /// </summary>
-    public class SharerConnection
+    public class SharerConnection : BinaryWriter
     {
         private Dictionary<SharerCommandID, Type> _notificationCommand = new Dictionary<SharerCommandID, Type>()
         {
-            { SharerCommandID.Ready, typeof(SharerReadyCommand)},
+            // For future notification commands
         };
 
         private const Byte SHARER_START_COMMAND_CHAR = 0x92;
@@ -26,7 +27,7 @@ namespace Sharer
 
         private SerialPort _serialPort = new SerialPort();
 
-        public SharerConnection(string portName, int baudRate, Parity parity = Parity.None, int dataBit=8, StopBits stopBits=StopBits.One, Handshake handShake=Handshake.None)
+        public SharerConnection(string portName, int baudRate, Parity parity = Parity.None, int dataBit = 8, StopBits stopBits = StopBits.One, Handshake handShake = Handshake.None)
         {
             _serialPort.PortName = portName;
 
@@ -64,30 +65,43 @@ namespace Sharer
             return SerialPort.GetPortNames();
         }
 
-       private void serialPort_DataReceived(object s, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                byte[] data = new byte[_serialPort.BytesToRead];
-                int count = _serialPort.Read(data, 0, data.Length);
+        private readonly List<byte> _userData = new List<byte>(100);
+        public event EventHandler<UserDataReceivedEventArgs> UserDataReceived;
 
-                if (count > 0)
-                {    
-                    for (int i = 0; i < count; i++)
+        private void serialPort_DataReceived(object s, SerialDataReceivedEventArgs e)
+        {
+            lock (_lck)
+            {
+                try
+                {
+                    byte[] data = new byte[_serialPort.BytesToRead];
+                    int count = _serialPort.Read(data, 0, data.Length);
+
+                    if (count > 0)
                     {
-                        ParseReceivedData(data[i]);
+                        for (int i = 0; i < count; i++)
+                        {
+                            ParseReceivedData(data[i]);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _receiveStep = ReceiveSteps.Free;
+                    if (_currentCommand != null)
+                    {
+                        _currentCommand.EndReceive(false, ex);
+                        _currentCommand = null;
                     }
                 }
             }
-            catch(Exception ex)
-            {
-                _receiveStep = ReceiveSteps.Free;
-                if(_currentCommand != null)
+
+                try
                 {
-                    _currentCommand.EndReceive(false, ex);
-                    _currentCommand = null;
+                    if (_userData.Count > 0) UserDataReceived?.Invoke(this, new UserDataReceivedEventArgs(_userData.ToArray()));
                 }
-            }
+                catch { }
+                finally { _userData.Clear(); }
         }
 
         private byte _lastDeviceMessageId;
@@ -104,37 +118,46 @@ namespace Sharer
                     break;
 
                 case ReceiveSteps.CommandId:
-                    _lastCommandID = (SharerCommandID)b;
+                    if (Enum.GetValues(typeof(SharerCommandID)).OfType<SharerCommandID>().Contains((SharerCommandID)b))
+                    {
+                        _lastCommandID = (SharerCommandID)b;
+                        _receiveStep = ReceiveSteps.SupervisorMessageId;
+                    }
+                    else
+                    {
+                        _userData.Add(SHARER_START_COMMAND_CHAR);
+                        _userData.Add(_lastDeviceMessageId);
+                        _userData.Add(b);
+                        _receiveStep = ReceiveSteps.Free;
+                    }
 
-                    _receiveStep = ReceiveSteps.SupervisorMessageId;
-                    // to do : handle asynchronous messages
                     break;
 
                 case ReceiveSteps.SupervisorMessageId:
 
-                    lock (_sentCommands)
+                    // command without request
+                    if (_notificationCommand.ContainsKey(_lastCommandID))
                     {
-                        // command without request
-                        if (_notificationCommand.ContainsKey(_lastCommandID))
+                        _currentCommand = (SharerSentCommand)Activator.CreateInstance(_notificationCommand[_lastCommandID]);
+                        _currentCommand.Timeouted += _currentCommand_Timeouted;
+
+                        _receiveStep = ReceiveSteps.Body;
+                    }
+                    else
+                    {
+                        _currentCommand = _sentCommands.FirstOrDefault((x) => x.CommandID == _lastCommandID && x.SentID == b);
+                        _currentCommand.Timeouted += _currentCommand_Timeouted;
+
+                        if (_currentCommand == null)
                         {
-                            _currentCommand = (SharerSentCommand)Activator.CreateInstance(_notificationCommand[_lastCommandID]);
-                            _receiveStep = ReceiveSteps.Body;
+                            _receiveStep = ReceiveSteps.Free;
+
+                            throw new Exception("Command ID " + _lastCommandID + " not found in history");
                         }
                         else
                         {
-                            _currentCommand = _sentCommands.FirstOrDefault((x) => x.CommandID == _lastCommandID && x.SentID == b);
-
-                            if (_currentCommand == null)
-                            {
-                                _receiveStep = ReceiveSteps.Free;
-
-                                throw new Exception("Command ID " + _lastCommandID + " not found in history");
-                            }
-                            else
-                            {
-                                _sentCommands.Remove(_currentCommand);
-                                _receiveStep = ReceiveSteps.Body;
-                            }
+                            _sentCommands.Remove(_currentCommand);
+                            _receiveStep = ReceiveSteps.Body;
                         }
                     }
                     break;
@@ -149,9 +172,6 @@ namespace Sharer
 
                         switch (_currentCommand.CommandID)
                         {
-                            case SharerCommandID.Ready:
-                                AsyncNotifyReady();
-                                break;
                             case SharerCommandID.Error:
 
                                 break;
@@ -159,73 +179,77 @@ namespace Sharer
                     }
                     break;
                 default:
+                    if(_currentCommand != null)
+                    {
+                        _currentCommand.Timeouted -= _currentCommand_Timeouted;
+                        _currentCommand = null;
+                    }
+
                     if (b == SHARER_START_COMMAND_CHAR)
                     {
                         _receiveStep = ReceiveSteps.DeviceMessageId;
                     }
                     else
                     {
-                        // to do : store value for user stream
+                        _userData.Add(b);
                     }
                     break;
             }
         }
 
-        private void AsyncNotifyReady()
+        private void _currentCommand_Timeouted(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() =>
+            if(_receiveStep == ReceiveSteps.DeviceMessageId || _receiveStep == ReceiveSteps.Body)
             {
+                _sentCommands.Remove(_currentCommand);
+                _receiveStep = ReceiveSteps.Free;
+            }
+        }
+
+        public void Connect(int waitSharerAvailableTimeout = 10000, bool refreshLists = true)
+        {
+                Disconnect();
+
                 try
                 {
-                    try
+                    _serialPort.Open();
+
+                    if (waitSharerAvailableTimeout > 0)
                     {
-                        if (RefreshFunctionListOnReady) RefreshFunctions();
-                        if (RefreshVariableListOnReady) RefreshVariables();
+                        var cmd = new SharerGetInfosCommand();
+                        sendCommand(cmd);
+
+                        if (!cmd.WaitAnswer(TimeSpan.FromMilliseconds(waitSharerAvailableTimeout)))
+                        {
+                            throw new Exception($"The serial communication is connected but Sharer is not available. Ensure that Sharer.Run() is called in loop() function and that setup() function takes less than {waitSharerAvailableTimeout}ms.");
+                        }
                     }
-                    finally
+
+                    if (refreshLists)
                     {
-                        try { Ready?.Invoke(this, EventArgs.Empty); }
-                        catch { }
+                        RefreshFunctions();
+                        RefreshVariables();
                     }
                 }
-                catch(Exception ex)
+                catch
                 {
-                    RaiseInternalError(ex);
+                    Disconnect();
+                    throw;
                 }
-            });
         }
-
-       void RaiseInternalError(Exception ex)
-        {
-            try { InternalError?.Invoke(this, new ErrorEventArgs(ex)); }
-            catch { }
-        }
-
-        public Boolean RefreshVariableListOnReady { get; set; } = true;
-        public Boolean RefreshFunctionListOnReady { get; set; } = true;
-
-        public event EventHandler Ready;
-
-        public delegate void InternalErrorEventHandler(object o, ErrorEventArgs e);
-        public event InternalErrorEventHandler InternalError;
-
-
-        public void Connect()
-        {
-            Disconnect();
-
-            _serialPort.Open();
-        }
-
-
 
         public void Disconnect()
         {
-            if(Connected)
+            lock (_lck)
             {
-                _serialPort.Close();
-            }
+                if (Connected)
+                {
+                    _serialPort.Close();
+                }
 
+
+                _sentCommands.Clear();
+            }
         }
 
 
@@ -237,9 +261,9 @@ namespace Sharer
             }
         }
 
-        private void assertConnected()
+        private void AssertConnected()
         {
-            if (!Connected) throw new Exception("Not connected");
+            if (!Connected) throw new Exception("Sharer interface is not connected.");
         }
 
         public List<SharerFunction> Functions = new List<SharerFunction>();
@@ -247,7 +271,7 @@ namespace Sharer
 
         public void RefreshFunctions()
         {
-            assertConnected();
+            AssertConnected();
 
             var lst = new List<SharerFunction>();
 
@@ -268,7 +292,7 @@ namespace Sharer
 
         public void RefreshVariables()
         {
-            assertConnected();
+            AssertConnected();
 
             var lst = new List<SharerVariable>();
 
@@ -296,7 +320,7 @@ namespace Sharer
 
         public List<SharerReadVariableReturn> ReadVariables(IEnumerable<string> names)
         {
-            assertConnected();
+            AssertConnected();
 
             if (names == null) throw new ArgumentNullException("names");
             if (names.Count() == 0) return new List<SharerReadVariableReturn>();
@@ -305,7 +329,7 @@ namespace Sharer
 
             var types = new SharerType[names.Count()];
 
-            for(int i = 0; i < names.Count(); i++)
+            for (int i = 0; i < names.Count(); i++)
             {
                 ids[i] = (short)Variables.FindIndex((x) => string.Equals(x.Name, names.ElementAt(i)));
                 if (ids[i] < 0) throw new Exception(names.ElementAt(i) + " not found in variables");
@@ -319,11 +343,11 @@ namespace Sharer
                 using (BinaryWriter writer = new BinaryWriter(memory))
                 {
                     writer.Write((short)ids.Length);
-                    foreach(var id in ids)
+                    foreach (var id in ids)
                     {
                         writer.Write(id);
                     }
-                        buffer = memory.ToArray();
+                    buffer = memory.ToArray();
                 }
             }
 
@@ -336,7 +360,7 @@ namespace Sharer
 
             if (!success)
             {
-                throw new Exception("Error while writing variables", cmd.Exception);
+                throw new Exception("Error while reading variables", cmd.Exception);
             }
 
             return cmd.Values;
@@ -345,14 +369,14 @@ namespace Sharer
 
         public bool WriteVariables(IEnumerable<SharerWriteValue> values)
         {
-            assertConnected();
+            AssertConnected();
 
             if (values == null) throw new ArgumentNullException("values");
             if (values.Count() == 0) return true;
 
             var valueToWrite = new List<SharerWriteValue>(values.Count());
 
-            foreach(var value in values)
+            foreach (var value in values)
             {
                 var index = Variables.FindIndex((x) => string.Equals(x.Name, value.Name));
 
@@ -385,11 +409,11 @@ namespace Sharer
 
 
             return values.All((x) => x.Status == SharerWriteVariableStatus.OK);
-         }
+        }
 
-            public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName,TimeSpan timeout, params object[] arguments)
+        public SharerFunctionReturn<ReturnType> Call<ReturnType>(string functionName, TimeSpan timeout, params object[] arguments)
         {
-            assertConnected();
+            AssertConnected();
 
             if (functionName == null)
             {
@@ -399,9 +423,9 @@ namespace Sharer
             Int16 functionId = -1;
             SharerFunction function = null;
 
-            for(int i = 0; i < Functions.Count; i++)
+            for (int i = 0; i < Functions.Count; i++)
             {
-                if(Functions[i].Name == functionName)
+                if (Functions[i].Name == functionName)
                 {
                     function = Functions[i];
                     functionId = (Int16)i;
@@ -410,19 +434,19 @@ namespace Sharer
             }
 
 
-            if (function == null || functionId<0)
+            if (function == null || functionId < 0)
             {
                 throw new Exception(functionName + " not found in function list. Try to update the function List or check if this function has been shared.");
             }
-           
-            if(arguments == null || arguments.Length == 0)
+
+            if (arguments == null || arguments.Length == 0)
             {
-                if(function.Arguments.Count != 0)
+                if (function.Arguments.Count != 0)
                 {
                     throw new Exception("Attempt to call the function " + function.Name + " with no arguments, but the function has " + function.Arguments.Count + " arguments");
                 }
             }
-            else if(function.Arguments.Count != arguments.Length)
+            else if (function.Arguments.Count != arguments.Length)
             {
                 throw new Exception("Attempt to call the function " + function.Name + " with " + arguments.Length + " argument(s), but the function has " + function.Arguments.Count + " argument(s)");
             }
@@ -448,15 +472,15 @@ namespace Sharer
                             {
                                 SharerTypeHelper.Encode(function.Arguments[i].Type, writer, arguments[i]);
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 throw new Exception("Error in argument " + function.Arguments[i].Name + " of function " + function.Name, ex);
                             }
                         }
                     }
 
-                
-                buffer= memory.ToArray();
+
+                    buffer = memory.ToArray();
 
                 }
             }
@@ -497,41 +521,150 @@ namespace Sharer
 
         private List<SharerSentCommand> _sentCommands = new List<SharerSentCommand>();
 
+        private object _lck = new object();
+
         private void sendCommand(SharerSentCommand cmd)
         {
-            lock (_sentCommands)
+            lock (_lck)
             {
-                _currentSupervisorCommandID++;
 
-            cmd.BeginSend(_currentSupervisorCommandID);
+                cmd.BeginSend(_currentSupervisorCommandID);
 
-             var header = new byte[] { SHARER_START_COMMAND_CHAR, _currentSupervisorCommandID, (byte)cmd.CommandID };
+                var header = new byte[] { SHARER_START_COMMAND_CHAR, _currentSupervisorCommandID, (byte)cmd.CommandID };
 
-            // Write header, same for all commands
-            _serialPort.Write(header, 0, header.Length);
+                // Write header, same for all commands
+                _serialPort.Write(header, 0, header.Length);
 
-            // write optionnal arguments
-            var buffer = cmd.ArgumentsToSend();
-            if (buffer != null && buffer.Length>0)
-            {
-                _serialPort.Write(buffer, 0, buffer.Length);
-            }
+                // write optionnal arguments
+                var buffer = cmd.ArgumentsToSend();
+                if (buffer != null && buffer.Length > 0)
+                {
+                    _serialPort.Write(buffer, 0, buffer.Length);
+                }
 
 
-      
+
                 _sentCommands.Add(cmd);
+
+                _currentSupervisorCommandID++;
             }
         }
 
-    }
-}
+        public SharerGetInfosCommand GetInfos()
+        {
+            var cmd = new Sharer.Command.SharerGetInfosCommand();
 
-public class ErrorEventArgs : EventArgs
-{
-    public readonly Exception Exception;
+            sendCommand(cmd);
 
-    public ErrorEventArgs(Exception ex)
-    {
-        Exception = ex;
+            cmd.WaitAnswer(DEFAULT_TIMEOUT);
+
+            return cmd;
+        }
+
+
+        public void WriteUserData(char[] chars, int index, int count)
+        {
+            AssertConnected();
+
+            lock (_lck)
+            {
+                _serialPort.Write(chars, index, count);
+            }
+        }
+
+        public void WriteUserData(string value)
+        {
+            AssertConnected();
+
+            lock (_lck)
+            {
+                _serialPort.Write(value);
+            }
+        }
+
+        public void WriteUserData(float value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(ulong value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(long value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(uint value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(int value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(ushort value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(short value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(byte[] buffer, int index, int count)
+        {
+            AssertConnected();
+
+            lock (_lck)
+            {
+                _serialPort.Write(buffer, index, count);
+            }
+        }
+
+        public void WriteUserData(double value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(char[] chars)
+        {
+            if (chars == null) throw new ArgumentNullException("chars");
+
+            WriteUserData(chars, 0, chars.Length);
+        }
+
+        public void WriteUserData(char ch)
+        {
+            WriteUserData(new char[] { ch });
+        }
+
+
+        public void WriteUserData(byte[] buffer)
+        {
+            if (buffer == null) throw new ArgumentNullException("buffer");
+
+            WriteUserData(buffer, 0, buffer.Length);
+        }
+
+        public void WriteUserData(sbyte value)
+        {
+            WriteUserData(BitConverter.GetBytes(value));
+        }
+
+        public void WriteUserData(byte value)
+        {
+            WriteUserData(new byte[] { value });
+        }
+
+        public void WriteUserData(bool value)
+        {
+            WriteUserData((byte)(value ? 0xFF : 0x00));
+        }
     }
 }
