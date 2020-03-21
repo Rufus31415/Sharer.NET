@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace Sharer.Command
 {
+    /// <summary>
+    /// Abstract class to describe a Sharer command, encode and decode it
+    /// </summary>
     public abstract class SharerSentCommand
     {
         internal abstract SharerCommandID CommandID { get; }
@@ -11,9 +14,7 @@ namespace Sharer.Command
 
         internal event EventHandler Timeouted;
 
-        public byte SentID;
-
-        public byte ReceiveID;
+        internal byte SentID;
 
         // return True when decodage is done
         internal abstract bool DecodeArgument(byte b);
@@ -29,6 +30,9 @@ namespace Sharer.Command
 
         private bool _AnswerReceived;
 
+        /// <summary>
+        /// Internal exception thrown during command execution
+        /// </summary>
         public Exception Exception { get; private set; }
 
         internal void EndReceive(bool success, Exception ex = null)
@@ -39,6 +43,11 @@ namespace Sharer.Command
             _autoResetEvent.Set();
         }
 
+        /// <summary>
+        /// Wait command to finish call and answer
+        /// </summary>
+        /// <param name="timeout">Maximum blocking time</param>
+        /// <returns>True if success</returns>
         public bool WaitAnswer(TimeSpan timeout)
         {
           bool success = _autoResetEvent.WaitOne(timeout);

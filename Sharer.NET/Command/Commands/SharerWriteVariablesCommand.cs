@@ -11,10 +11,29 @@ namespace Sharer.Command
     /// </summary>
     public enum SharerWriteVariableStatus : byte
     {
+        /// <summary>
+        /// The variable has not been yet written
+        /// </summary>
         NotYetWritten = 0xff,
+
+        /// <summary>
+        /// The variable has successfullt been written
+        /// </summary>
         OK = 0,
+
+        /// <summary>
+        /// Id of the variable is out of range of the Arduino variable array
+        /// </summary>
         VariableIdOutOfRange,
+
+        /// <summary>
+        /// Variable type is unknown by the board, please check Sharer version
+        /// </summary>
         UnknownType,
+
+        /// <summary>
+        /// The variable to write has not been found in variable list
+        /// </summary>
         NotFound
     }
 
@@ -23,11 +42,20 @@ namespace Sharer.Command
     /// </summary>
     public class SharerWriteVariableReturn
     {
+        /// <summary>
+        /// Status of the writting
+        /// </summary>
         public SharerReadVariableStatus Status = SharerReadVariableStatus.NotYedRead;
 
-        // Value written
+        /// <summary>
+        /// Value written
+        /// </summary>
         public object Value;
 
+        /// <summary>
+        /// A human readable string
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             if (Status == SharerReadVariableStatus.OK)
@@ -81,7 +109,7 @@ namespace Sharer.Command
         /// <summary>
         /// Create a command to write a variable on Arduino
         /// </summary>
-        /// <param name="name">Variable to write</param>
+        /// <param name="variable">Variable to write</param>
         /// <param name="value">Value to write</param>
         public SharerWriteValue(SharerVariable variable, object value)
         {

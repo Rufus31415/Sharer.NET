@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Sharer.Demo</RootNamespace>
+    <AssemblyName>Sharer.DemoConsole</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sharer.NET\Sharer.NET.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -208,6 +208,17 @@ namespace Sharer
         }
 
         /// <summary>
+        /// Read a variable by its name
+        /// </summary>
+        /// <param name="name">Name of the variable to read</param>
+        /// <returns>Variable value and read status</returns>
+        public SharerReadVariableReturn ReadVariable(string name)
+        {
+            return ReadVariables(new string[] { name })?.FirstOrDefault();
+        }
+
+
+        /// <summary>
         /// Read simultaneously several variables in Arduino
         /// </summary>
         /// <param name="names">Names of variable to read</param>
@@ -258,6 +269,27 @@ namespace Sharer
             }
 
             return cmd.Values;
+        }
+
+        /// <summary>
+        /// Write an Arduino variable
+        /// </summary>
+        /// <param name="value">Value to write</param>
+        /// <returns>True if all variable has been succesfully written</returns>
+        public bool WriteVariable(SharerWriteValue value)
+        {
+            return WriteVariables(new SharerWriteValue[] { value });
+        }
+
+        /// <summary>
+        /// Write an Arduino variable
+        /// </summary>
+        /// <param name="name">Variable name to write</param>
+        /// <param name="value">New value to write</param>
+        /// <returns>True if all variable has been succesfully written</returns>
+        public bool WriteVariable(string name, object value)
+        {
+            return WriteVariables(new SharerWriteValue[] { new SharerWriteValue(name, value) } );
         }
 
         /// <summary>

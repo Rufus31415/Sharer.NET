@@ -8,17 +8,64 @@ namespace Sharer.FunctionCall
     /// </summary>
     public enum SharerType : byte
     {
+        /// <summary>
+        /// No type returned
+        /// </summary>
         @void,
+
+        /// <summary>
+        /// Boolean encoded in a byte (0x00=false, else true)
+        /// </summary>
         @bool,
+
+        /// <summary>
+        /// Unsigned 8 bits integer
+        /// </summary>
         @byte,
+
+        /// <summary>
+        /// Signed 8 bits integer
+        /// </summary>
         @short,
+
+        /// <summary>
+        /// Signed 16 bits integer
+        /// </summary>
         @int,
+
+        /// <summary>
+        /// Unsigned 16 bits integer
+        /// </summary>
         @uint,
+
+        /// <summary>
+        /// Signed 32 bits integer
+        /// </summary>
         @long,
+
+        /// <summary>
+        /// Unsigned 32 bits integer
+        /// </summary>
         @ulong,
+
+        /// <summary>
+        /// Signed 64 bits integer
+        /// </summary>
         int64,
+
+        /// <summary>
+        /// unsigned 64 bits integer
+        /// </summary>
         uint64,
+
+        /// <summary>
+        /// 32 bits float
+        /// </summary>
         @float,
+
+        /// <summary>
+        /// 64 bits float
+        /// </summary>
         @double
     }
 
@@ -58,7 +105,10 @@ namespace Sharer.FunctionCall
             switch (type)
             {
                 case SharerType.@bool:
-                    var boolValue = Boolean.Parse(value.ToString());
+                    var str = value.ToString();
+                    bool boolValue;
+                    if (Int64.TryParse(str, out long longValue)) boolValue = longValue != 0;
+                    else boolValue = Boolean.Parse(str);
                     writer.Write((byte)(boolValue? 1:0));
                     break;
                 case SharerType.@byte:

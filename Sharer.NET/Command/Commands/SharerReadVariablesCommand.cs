@@ -8,9 +8,24 @@ namespace Sharer.Command
     /// </summary>
     public enum SharerReadVariableStatus : byte
     {
+        /// <summary>
+        /// The variable has not been yet read
+        /// </summary>
         NotYedRead = 0xff,
+
+        /// <summary>
+        /// The variable has been successfully read
+        /// </summary>
         OK = 0,
+
+        /// <summary>
+        /// Id of the variable is out of range of the Arduino variable array
+        /// </summary>
         VariableIdOutOfRange,
+
+        /// <summary>
+        /// Variable type is unknown by the board, please check Sharer version
+        /// </summary>
         UnknownType,
     }
 
@@ -29,6 +44,9 @@ namespace Sharer.Command
         /// </summary>
         public object Value;
 
+        /// <summary>
+        /// A human readable string
+        /// </summary>
         public override string ToString()
         {
             if (Status == SharerReadVariableStatus.OK)

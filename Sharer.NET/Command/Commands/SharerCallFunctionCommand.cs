@@ -8,9 +8,24 @@ namespace Sharer.Command
     /// </summary>
     public enum SharerCallFunctionStatus : byte
     {
+        /// <summary>
+        /// The function has not been yet called
+        /// </summary>
         NotYetCalled = 0xff,
+
+        /// <summary>
+        /// The function has been successfully camled
+        /// </summary>
         OK = 0,
+
+        /// <summary>
+        /// The id of the function is out of the range of function array on Arduino
+        /// </summary>
         FunctionIdOutOfRange,
+
+        /// <summary>
+        /// Returned type ou argument type is unknown, please check version of Sharer
+        /// </summary>
         UnknownType,
     }
 
