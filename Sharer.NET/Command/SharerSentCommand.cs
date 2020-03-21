@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sharer.Command
 {
     public abstract class SharerSentCommand
     {
-        public abstract SharerCommandID CommandID { get; }
+        internal abstract SharerCommandID CommandID { get; }
 
         internal abstract byte[] ArgumentsToSend();
 

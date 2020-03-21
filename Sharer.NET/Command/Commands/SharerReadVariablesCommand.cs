@@ -1,24 +1,32 @@
 ﻿using Sharer.FunctionCall;
-using Sharer.Variables;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sharer.Command
 {
+    /// <summary>
+    /// Status of the reading
+    /// </summary>
     public enum SharerReadVariableStatus : byte
     {
-        UnknownStatus = 0xff,
+        NotYedRead = 0xff,
         OK = 0,
         VariableIdOutOfRange,
         UnknownType,
     }
 
+    /// <summary>
+    /// Variable value and status of the reading
+    /// </summary>
     public class SharerReadVariableReturn
     {
-        public SharerReadVariableStatus Status = SharerReadVariableStatus.UnknownStatus;
+        /// <summary>
+        /// Status of the reading
+        /// </summary>
+        public SharerReadVariableStatus Status = SharerReadVariableStatus.NotYedRead;
+
+        /// <summary>
+        /// Value of the variable
+        /// </summary>
         public object Value;
 
         public override string ToString()
@@ -36,8 +44,10 @@ namespace Sharer.Command
     }
 
 
-
-    class SharerReadVariablesCommand : SharerSentCommand
+    /// <summary>
+    /// Sharer command that encode/decode the reading of a variable
+    /// </summary>
+    internal class SharerReadVariablesCommand : SharerSentCommand
     {
         private byte[] _buffer;
         private SharerType[] _types;
@@ -49,13 +59,7 @@ namespace Sharer.Command
             Values =  new List<SharerReadVariableReturn>(types.Length);
         }
 
-        public override SharerCommandID CommandID
-        {
-            get
-            {
-                return SharerCommandID.ReadVariables;
-            }
-        }
+        internal override SharerCommandID CommandID => SharerCommandID.ReadVariables;
 
         internal override byte[] ArgumentsToSend()
         {

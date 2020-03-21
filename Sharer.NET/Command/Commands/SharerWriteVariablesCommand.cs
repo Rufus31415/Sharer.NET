@@ -3,12 +3,12 @@ using Sharer.Variables;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sharer.Command
 {
+    /// <summary>
+    /// Status of the variable writting
+    /// </summary>
     public enum SharerWriteVariableStatus : byte
     {
         NotYetWritten = 0xff,
@@ -18,9 +18,14 @@ namespace Sharer.Command
         NotFound
     }
 
+    /// <summary>
+    /// Status of the variable writting
+    /// </summary>
     public class SharerWriteVariableReturn
     {
-        public SharerReadVariableStatus Status = SharerReadVariableStatus.UnknownStatus;
+        public SharerReadVariableStatus Status = SharerReadVariableStatus.NotYedRead;
+
+        // Value written
         public object Value;
 
         public override string ToString()
@@ -37,14 +42,34 @@ namespace Sharer.Command
         }
     }
 
+    /// <summary>
+    /// Variable to write
+    /// </summary>
     public class SharerWriteValue
     {
+        /// <summary>
+        /// Name of the variable to write
+        /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Value of the variable to write
+        /// </summary>
         public object Value { get; }
+
+        /// <summary>
+        /// Status of the writting
+        /// </summary>
         public SharerWriteVariableStatus Status { get; internal set; } = SharerWriteVariableStatus.NotYetWritten;
+
         internal SharerType Type { get; set; }
         internal int Index { get; set; }
 
+        /// <summary>
+        /// Create a command to write a variable on Arduino
+        /// </summary>
+        /// <param name="name">Name of the variable to write</param>
+        /// <param name="value">Value to write</param>
         public SharerWriteValue(string name, object value)
         {
             if(string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
@@ -53,6 +78,11 @@ namespace Sharer.Command
             this.Value = value;
         }
 
+        /// <summary>
+        /// Create a command to write a variable on Arduino
+        /// </summary>
+        /// <param name="name">Variable to write</param>
+        /// <param name="value">Value to write</param>
         public SharerWriteValue(SharerVariable variable, object value)
         {
             if (variable == null) throw new ArgumentNullException("variable");
@@ -90,7 +120,7 @@ namespace Sharer.Command
             }
         }
 
-        public override SharerCommandID CommandID
+        internal override SharerCommandID CommandID
         {
             get
             {

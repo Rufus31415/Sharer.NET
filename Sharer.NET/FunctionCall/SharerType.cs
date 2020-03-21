@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sharer.FunctionCall
 {
+    /// <summary>
+    /// List of all types supported by Sharer for variables and function argument and return
+    /// </summary>
     public enum SharerType : byte
     {
         @void,
@@ -23,9 +22,12 @@ namespace Sharer.FunctionCall
         @double
     }
 
-    public static class SharerTypeHelper
+    /// <summary>
+    /// Static function to hel data manipulation
+    /// </summary>
+    internal static class SharerTypeHelper
     {
-        public static int Sizeof(SharerType type)
+        internal static int Sizeof(SharerType type)
         {
             switch (type)
             {
@@ -49,7 +51,7 @@ namespace Sharer.FunctionCall
             }
         }
 
-        public static void Encode(SharerType type, BinaryWriter writer, object value)
+        internal static void Encode(SharerType type, BinaryWriter writer, object value)
         {
             if (value == null) throw new ArgumentNullException("value");
 
@@ -94,7 +96,7 @@ namespace Sharer.FunctionCall
             }
         }
 
-        public static object Decode(SharerType type, byte[] buffer)
+        internal static object Decode(SharerType type, byte[] buffer)
         {
             using (MemoryStream memory = new MemoryStream(buffer))
             {

@@ -1,25 +1,24 @@
 ﻿using Sharer.FunctionCall;
 using Sharer.Variables;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Sharer.Command
 {
-    class SharerGetAllVariablesDefinitionCommand : SharerSentCommand
+    /// <summary>
+    /// Command that allows to encode and decode the list of all variables shared
+    /// </summary>
+    internal class SharerGetAllVariablesDefinitionCommand : SharerSentCommand
     {
-        public override SharerCommandID CommandID
-        {
-            get
-            {
-                return SharerCommandID.AllVariablesDefinition;
-            }
-        }
+        internal override SharerCommandID CommandID => SharerCommandID.AllVariablesDefinition;
 
         internal override byte[] ArgumentsToSend()
         {
             return null;
         }
 
+        /// <summary>
+        /// internal state machine for decoding the list
+        /// </summary>
         private enum Steps
         {
             VariableCountHigh,

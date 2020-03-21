@@ -1,26 +1,44 @@
 ﻿using Sharer.FunctionCall;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sharer.Command
 {
+    /// <summary>
+    /// Status of the remote call
+    /// </summary>
     public enum SharerCallFunctionStatus : byte
     {
-        UnknownStatus = 0xff,
+        NotYetCalled = 0xff,
         OK = 0,
         FunctionIdOutOfRange,
         UnknownType,
     }
 
+    /// <summary>
+    /// Status of the function call
+    /// </summary>
+    /// <typeparam name="ReturnType">Expected .NET type returned by the function</typeparam>
     public class SharerFunctionReturn<ReturnType>
     {
-        public SharerCallFunctionStatus Status = SharerCallFunctionStatus.UnknownStatus;
+        /// <summary>
+        /// Status of the success of  function call
+        /// </summary>
+        public SharerCallFunctionStatus Status = SharerCallFunctionStatus.NotYetCalled;
+
+        /// <summary>
+        /// Type of the returned value
+        /// </summary>
         public SharerType Type;
+
+        /// <summary>
+        /// Returned value converted in .NET type
+        /// </summary>
         public ReturnType Value;
 
+         /// <summary>
+         /// A human readable string
+         /// </summary>
+         /// <returns></returns>
         public override string ToString()
         {
             if (Status == SharerCallFunctionStatus.OK)
@@ -35,9 +53,11 @@ namespace Sharer.Command
         }
     }
 
-
-
-    class SharerCallFunctionCommand<ReturnType> : SharerSentCommand
+    /// <summary>
+    /// Command that allow to encode and decode a function call
+    /// </summary>
+    /// <typeparam name="ReturnType">Expected .NET type returned by the function</typeparam>
+    internal class SharerCallFunctionCommand<ReturnType> : SharerSentCommand
     {
         private byte[] _buffer;
         SharerType _returnType;
@@ -49,13 +69,7 @@ namespace Sharer.Command
             Return.Type = returnType;
         }
 
-        public override SharerCommandID CommandID
-        {
-            get
-            {
-                return SharerCommandID.CallFunction;
-            }
-        }
+        internal override SharerCommandID CommandID => SharerCommandID.CallFunction;
 
         internal override byte[] ArgumentsToSend()
         {

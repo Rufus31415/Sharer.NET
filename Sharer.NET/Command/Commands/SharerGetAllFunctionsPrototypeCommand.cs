@@ -1,27 +1,21 @@
 ﻿using Sharer.FunctionCall;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sharer.Command
 {
-    class SharerGetAllFunctionsPrototypeCommand : SharerSentCommand
+    /// <summary>
+    /// Command that allows to encode and decode the list of all function shared
+    /// </summary>
+    internal class SharerGetAllFunctionsPrototypeCommand : SharerSentCommand
     {
-        public override SharerCommandID CommandID
-        {
-            get
-            {
-                return SharerCommandID.AllFunctionsPrototype;
-            }
-        }
+        internal override SharerCommandID CommandID => SharerCommandID.AllFunctionsPrototype;
 
         internal override byte[] ArgumentsToSend()
         {
-            return null;
+            return null; // this command has no arguments
         }
 
+        // internal state machine for decoding the list of message
         private enum Steps
         {
             FunctionCountHigh,
@@ -151,7 +145,5 @@ namespace Sharer.Command
 
             return _receivedStep == Steps.End;
         }
-
-
     }
 }

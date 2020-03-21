@@ -1,38 +1,55 @@
-﻿using System;
+﻿/*
+                ███████╗██╗  ██╗ █████╗ ██████╗ ███████╗██████╗ 
+                ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗
+                ███████╗███████║███████║██████╔╝█████╗  ██████╔╝
+                ╚════██║██╔══██║██╔══██║██╔══██╗██╔══╝  ██╔══██╗
+                ███████║██║  ██║██║  ██║██║  ██║███████╗██║  ██║
+                ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝    
+
+    Sharer is a .NET and Arduino Library to facilitate communication between and Arduino board and a desktop application.
+    With Sharer it is easy to remote call a function executed by Arduino, read and write a variable inside Arduino board memory.
+    Sharer uses the Serial communication to implement the Sharer protocol and remote execute commands.
+
+    This example allows you to send user messages, read/write variables and remote call functions on your Arduino board.
+
+    License: MIT
+    Author: Rufus31415
+    Website: https://rufus31415.github.io
+*/
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sharer;
-using System.Diagnostics;
 
-namespace Sharer.NETTest
+namespace Sharer.Demo
 {
     public partial class MainForm : Form
     {
-        #region Members
-        private SharerConnection _connection;
-
-        #endregion
-        #region General
         public MainForm()
         {
             InitializeComponent();
 
+            // Get last COM port used and fill combo box
             if (Properties.Settings.Default.ComPort != null && Properties.Settings.Default.ComPort.StartsWith("COM"))
             {
                 cbPort.Text = Properties.Settings.Default.ComPort;
             }
 
             refreshGUI();
-
         }
 
-
+        #region Function list
+        /// <summary>
+        /// Returns a colored label
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         private Label _getFunctionLabel(string text, Color color)
         {
             var ctrl = new Label();
@@ -44,6 +61,9 @@ namespace Sharer.NETTest
             return ctrl;
         }
 
+        /// <summary>
+        /// Returns a colored checkbox
+        /// </summary>
         private CheckBox _getFunctionCheckbox(string text, Color color)
         {
             var ctrl = new CheckBox();
@@ -55,29 +75,26 @@ namespace Sharer.NETTest
             return ctrl;
         }
 
+        /// <summary>
+        /// Returns a textbox that contains function argument value
+        /// </summary>
         private TextBox _getFunctionTextbox()
         {
             var ctrl = new TextBox();
             ctrl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             ctrl.AutoSize = true;
             ctrl.Margin = new System.Windows.Forms.Padding(0, 5, 0, 0);
-            this.textBox4.Size = new System.Drawing.Size(100, 20);
             return ctrl;
         }
 
-        private Boolean Connected
-        {
-            get
-            {
-                return _connection != null && _connection.Connected;
-            }
-        }
-
+        /// <summary>
+        /// Refresh GUI according to connection state
+        /// </summary>
         private void refreshGUI()
         {
             if (this.InvokeRequired)
             {
-                this.Invoke((MethodInvoker)(()=>refreshGUI()));
+                this.Invoke((MethodInvoker)(() => refreshGUI()));
                 return;
             }
 
@@ -195,7 +212,7 @@ namespace Sharer.NETTest
 
                             lbl.Click += (object sender, EventArgs e) => chk.Checked = !chk.Checked;
 
-                             var txt = _getFunctionTextbox();
+                            var txt = _getFunctionTextbox();
 
                             pnl.Controls.Add(txt);
 
@@ -222,25 +239,22 @@ namespace Sharer.NETTest
             catch { }
         }
 
-
-        private void handleException(Exception ex)
-        {
-            MessageBox.Show(ex.ToString(), "Oups...", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            refreshGUI();
-        }
-        #endregion
-
-        #region Connection
-        private void cbPort_DropDown(object sender, EventArgs e)
+        /// <summary>
+        /// Refresh and display function list
+        /// </summary>
+        private void btnGetFunctionList_Click(object sender, EventArgs e)
         {
             try
             {
                 Cursor = Cursors.WaitCursor;
-                cbPort.Items.Clear();
-                cbPort.Items.AddRange(SharerConnection.GetSerialPortNames());
+                if (_connection != null && _connection.Connected)
+                {
+                    _connection.RefreshFunctions();
+                    _connection.RefreshVariables();
+                }
                 refreshGUI();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 handleException(ex);
             }
@@ -250,6 +264,45 @@ namespace Sharer.NETTest
             }
         }
 
+        #endregion
+
+        #region Connection
+
+        /// <summary>
+        /// Pointer to the Sharer connection
+        /// </summary>
+        private SharerConnection _connection;
+
+        /// <summary>
+        /// Is the communication opened
+        /// </summary>
+        private bool Connected => _connection != null && _connection.Connected;
+
+        /// <summary>
+        /// Refresh available COM ports on drop down
+        /// </summary>
+        private void cbPort_DropDown(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                cbPort.Items.Clear();
+                cbPort.Items.AddRange(SharerConnection.GetSerialPortNames());
+                refreshGUI();
+            }
+            catch (Exception ex)
+            {
+                handleException(ex);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        /// <summary>
+        /// Try to connect
+        /// </summary>
         private void btnConnect_Click(object sender, EventArgs e)
         {
             try
@@ -281,23 +334,18 @@ namespace Sharer.NETTest
             }
         }
 
-        private void _connection_UserDataReceived(object sender, UserDataReceivedEventArgs e)
+        /// <summary>
+        /// Popup a message box on exception
+        /// </summary>
+        private void handleException(Exception ex)
         {
-            var str = e.GetReader();
-            var txt = str.ReadString();
-
-
-            txt= BitConverter.ToString(e.Data);
-
-            this.Invoke(new Action(() =>
-            {
-                txtReceivedUserData.Text += txt + "\r\n";
-            }));
-            
+            MessageBox.Show($"{ex.Message}\r\n\r\n{ex.StackTrace}", "Someting went wrong...", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            refreshGUI();
         }
-        #endregion
 
-        #region Session
+        /// <summary>
+        /// Disconnect interface
+        /// </summary>
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             try
@@ -319,30 +367,22 @@ namespace Sharer.NETTest
             }
         }
 
-
-        private void btnGetFunctionList_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Popup board information
+        /// </summary>
+        private void btnGetInfo_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Cursor = Cursors.WaitCursor;
-                if (_connection != null && _connection.Connected)
-                {
-                    _connection.RefreshFunctions();
-                    _connection.RefreshVariables();
-                }
-                refreshGUI();
-            }
-            catch (Exception ex)
-            {
-                handleException(ex);
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
+            var nfo = _connection.GetInfos();
+
+            MessageBox.Show(nfo.ToString(), "Board infos", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         #endregion
 
+        #region Variables
+        /// <summary>
+        /// Write variable
+        /// </summary>
         private void btnWrite(object sender, EventArgs e)
         {
             try
@@ -367,7 +407,7 @@ namespace Sharer.NETTest
                     }
 
 
-                    var allSuccess= _connection.WriteVariables(values);
+                    var allSuccess = _connection.WriteVariables(values);
 
                     for (int i = 0; i < values.Count; i++)
                     {
@@ -386,8 +426,9 @@ namespace Sharer.NETTest
             }
         }
 
-
-
+        /// <summary>
+        /// Read a variable once
+        /// </summary>
         private void btnRead_Click(object sender, EventArgs e)
         {
             try
@@ -398,9 +439,9 @@ namespace Sharer.NETTest
                     var names = new List<string>();
                     var txts = new List<TextBox>();
 
-                    foreach(var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
+                    foreach (var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
                     {
-                       var chk= pnl.Controls.OfType<CheckBox>().First();
+                        var chk = pnl.Controls.OfType<CheckBox>().First();
                         if (chk.Checked)
                         {
                             names.Add(chk.Name);
@@ -408,9 +449,9 @@ namespace Sharer.NETTest
                         }
                     }
 
-                   var values= _connection.ReadVariables(names.ToArray());
+                    var values = _connection.ReadVariables(names.ToArray());
 
-                    for(int i = 0; i < values.Count; i++)
+                    for (int i = 0; i < values.Count; i++)
                     {
                         txts[i].Text = values[i].ToString();
                         txts[i].ForeColor = values[i].Status == Command.SharerReadVariableStatus.OK ? Color.Black : Color.Red;
@@ -436,14 +477,27 @@ namespace Sharer.NETTest
             }
         }
 
+        /// <summary>
+        /// Start/Stop continuous read when check box state changes
+        /// </summary>
         private void chkRead_CheckedChanged(object sender, EventArgs e)
         {
             tmrRead.Enabled = chkRead.Checked;
         }
 
+        /// <summary>
+        /// Buffer of recorded values
+        /// </summary>
         private StringBuilder _record = new StringBuilder();
 
+        /// <summary>
+        /// Record has started
+        /// </summary>
         bool startRecord = false;
+
+        /// <summary>
+        /// Start a CSV record
+        /// </summary>
         private void btnRecord_Click(object sender, EventArgs e)
         {
             if (!startRecord)
@@ -469,19 +523,73 @@ namespace Sharer.NETTest
             }
         }
 
+       /// <summary>
+       /// Copy recorded data to clipboard
+       /// </summary>
         private void btnCopy_Click(object sender, EventArgs e)
         {
             Clipboard.SetText(_record.ToString());
         }
 
-        private void btnGetInfo_Click(object sender, EventArgs e)
+        #endregion
+
+        #region User Messages
+        /// <summary>
+        /// Enqueue received user message
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void _connection_UserDataReceived(object sender, UserData.UserDataReceivedEventArgs e)
         {
-            var nfo = _connection.GetInfos();
+            try
+            {
+                var str = e.GetReader().ReadString();
+                lock (_receivedData) _receivedData.Enqueue(str);
+            }
+            catch (Exception ex)
+            {
+                handleException(ex);
+            }
         }
 
+        /// <summary>
+        /// Send a user message
+        /// </summary>
         private void btnSend_Click(object sender, EventArgs e)
         {
             _connection.WriteUserData(txtSend.Text);
         }
+
+        /// <summary>
+        /// Enqueued user message. We use a queue to separate serial thread from GUI
+        /// </summary>
+        private readonly Queue<string> _receivedData = new Queue<string>();
+
+        /// <summary>
+        /// Dequeue and display user messages if any
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void tmrUnqueue_Tick(object sender, EventArgs e)
+        {
+            lock (_receivedData)
+            {
+                while (_receivedData.Any())
+                {
+                    txtReceivedUserData.AppendText(_receivedData.Dequeue());
+                    txtReceivedUserData.ScrollToCaret();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Press enter inside txtSend to send message
+        /// </summary>
+        private void txtSend_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter) btnSend.PerformClick();
+        }
+
+        #endregion
     }
 }
