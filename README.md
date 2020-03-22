@@ -1,21 +1,46 @@
-# Sharer.NET
+![GitHub](https://img.shields.io/github/license/rufus31415/sharer)
+![GitHub release](https://img.shields.io/github/v/release/rufus31415/sharer.net)
 
-# Sharer
+![.NET Framework 3.5](https://img.shields.io/badge/.NET_Framework-3.5-blueviolet)
+![.NET Framework 4.0](https://img.shields.io/badge/.NET_Framework-4.0-blueviolet)
+![.NET Framework 4.5](https://img.shields.io/badge/.NET_Framework-4.5-blueviolet)
+![.NET Framework 4.6](https://img.shields.io/badge/.NET_Framework-4.6-blueviolet)
+![.NET Framework 4.7](https://img.shields.io/badge/.NET_Framework-4.7-blueviolet)
+![.NET Framework 4.8](https://img.shields.io/badge/.NET_Framework-4.8-blueviolet)
 
-![Sharer](https://raw.githubusercontent.com/Rufus31415/Sharer.NET/master/Sharer.png)
 
-Sharer is an Arduino library that facilitates the communication between a PC and an Arduino board.
-You chose the functions and variables you want to share with your desktop application and your arduino board. Functions can be easily remotly called.
+![.NET Core 2.0](https://img.shields.io/badge/.NET_Core-2.0-blueviolet)
+![.NET Core 2.1](https://img.shields.io/badge/.NET_Core-2.1-blueviolet)
+![.NET Core 2.2](https://img.shields.io/badge/.NET_Core-2.2-blueviolet)
+![.NET Core 3.0](https://img.shields.io/badge/.NET_Core-3.0-blueviolet)
+![.NET Core 3.1](https://img.shields.io/badge/.NET_Core-3.1-blueviolet)
+
+![.NET Standard 2.1](https://img.shields.io/badge/.NET_Standard-2.1-blueviolet)
+
+![Arduino Uno](https://img.shields.io/badge/Arduino-Uno-blue)
+![Arduino Mega](https://img.shields.io/badge/Arduino-Mega-blue)
+![Arduino Nano](https://img.shields.io/badge/Arduino-Nano-blue)
+![Arduino Due](https://img.shields.io/badge/Arduino-Due-blue)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Rufus31415/Sharer.NET/master/Sharer.png">
+</p>
+
+Sharer is both a <b>.NET and an Arduino Library</b>. It allows a desktop application to <b>read/write variables</b> and <b>remote call functions on Arduino</b>, using the Sharer protocole accross a serial communication.
+
+
+# Download
 
 
 ![Sharer](https://raw.githubusercontent.com/Rufus31415/Sharer.NET/master/Resources/RemoteFunctionCall.png)
+
+
 
 Tested on boards :
 - Arduino UNO
 - Arduino NANO
 - Arduino MEGA
 - Arduino DUE
-
 
 
 ## .NET C# code example
