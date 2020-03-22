@@ -177,7 +177,7 @@ namespace Sharer.Demo
                                             lblResult.ForeColor = Color.Red;
                                         }
 
-                                        lblResult.Text = ret.ToString() + " (" + t.ToString(@"ss\:fff") + ")";
+                                        lblResult.Text = $"{ret.ToString()} ({(int)t.TotalMilliseconds} ms)";
                                     }
                                     catch (Exception ex)
                                     {
@@ -502,7 +502,7 @@ namespace Sharer.Demo
         {
             if (!startRecord)
             {
-                _record.Clear();
+                _record.Remove(0, _record.Length); // Clear
                 foreach (var pnl in this.pnlVariables.Controls.OfType<FlowLayoutPanel>())
                 {
                     var chk = pnl.Controls.OfType<CheckBox>().First();
