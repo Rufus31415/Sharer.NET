@@ -44,7 +44,7 @@ jobs:
     - name: zip win-arm
       run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_win-arm.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-arm\*"
     - name: zip linux-x64
-      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_linux-x64.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-linux-x64\*"
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_linux-x64.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\linux-x64\*"
     - name: zip linux-arm
       run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_linux-arm.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\linux-arm\*"
     - name: zip osx-x64
