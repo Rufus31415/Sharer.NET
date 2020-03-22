@@ -21,7 +21,7 @@ jobs:
     - name: zip Assemblies
       run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerAsssemblies.zip $Env:GITHUB_WORKSPACE\Sharer.NET\bin\Release\*
     - name: zip Windows Forms
-      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerWindowsFormsExample.zip $Env:GITHUB_WORKSPACE\Sharer.NET Example - Windows Forms\bin\Release\*
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerWindowsFormsExample.zip "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Windows Forms\bin\Release\*"
     - name: Build Console examples
       run: |
         cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
@@ -31,8 +31,20 @@ jobs:
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj /p:DeployOnBuild=true /p:PublishProfile=osx-x64 /p:Configuration=Release /p:OutDir=bin/osx-64
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj /p:DeployOnBuild=true /p:PublishProfile=linux-arm /p:Configuration=Release /p:OutDir=bin/linux-arm
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj /p:DeployOnBuild=true /p:PublishProfile=linux-x64 /p:Configuration=Release /p:OutDir=bin/linux-x64
+    - name: zip win-x64
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_win-x64.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-x64\*"
+    - name: zip win-x86
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_win-x86.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-x86\*"
+    - name: zip win-arm
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_win-arm.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-arm\*"
+    - name: zip linux-x64
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_linux-x64.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\win-linux-x64\*"
+    - name: zip linux-arm
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_linux-arm.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\linux-arm\*"
+    - name: zip osx-x64
+      run: 7z a -tzip -mx=9 $Env:GITHUB_WORKSPACE\SharerConsoleExample_osx-x64.zip  "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\bin\osx-x64\*"
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "SharerAsssemblies.zip"
+        artifacts: "SharerAsssemblies.zip,SharerWindowsFormsExample.zip,SharerConsoleExample_win-x64.zip,SharerConsoleExample_win-x86.zip,SharerConsoleExample_win-arm.zip,SharerConsoleExample_linux-x64.zip,SharerConsoleExample_linux-arm.zip,SharerConsoleExample_osx-x64.zip"
         bodyFile: "Instructions.md"
         token: ${{ secrets.GITHUB_TOKEN }}
