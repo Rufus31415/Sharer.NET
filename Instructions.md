@@ -16,3 +16,4 @@ The release contains the following archives :
   - SharerConsoleExample_linux-arm.zip : For Linux ARM (like Raspbian for Raspberry PI)
   - SharerConsoleExample_osx-x64.zip : For Mac OS X
 
+Arduino C++ library is here : https://github.com/Rufus31415/Sharer/releases
