@@ -130,7 +130,7 @@ Windows Forms example requires .NET Framework 3.5. It can be downloaded here : h
 #### Console cross-plateform example
 The console example run with .NET Core 3.0. But you don't need any runtime to execute it. The standalone console examples are available here :
 - Windows 64 bits : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_win-x64.zip
-- Windows 64 bits : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_win-x86.zip
+- Windows 32 bits : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_win-x86.zip
 - Windows ARM (for example Windows IOT for Raspberry PI) : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_win-arm.zip
 - Linux ARM (for example Raspbian for Raspberry PI) : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_linux-arm.zip
 - Linux 64 bits : https://github.com/Rufus31415/Sharer.net/releases/latest/download/SharerConsoleExample_linux-x64.zip
