@@ -5,7 +5,7 @@
     <AssemblyName>Sharer</AssemblyName>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<Authors>Rufus31415</Authors>
 	<Product>Sharer</Product>
 	<PackageProjectUrl>https://rufus31415.github.io/</PackageProjectUrl>
@@ -15,6 +15,9 @@
 	<FileVersion>1.0.0.0</FileVersion>
 	<Version>1.0.0</Version>
 	<Company />
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<Description>Sharer is an Arduino and .NET Library that facilitates serial communication between an Arduino and a desktop application. It is easy to read/write variables and remote call functions.</Description>
+	<PackageIcon>Sharer.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
@@ -48,5 +51,11 @@
     <PackageReference Include="System.IO.Ports">
       <Version>4.7.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Sharer.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 </Project>

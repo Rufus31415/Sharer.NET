@@ -5,10 +5,26 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Sharer.Demo</RootNamespace>
     <AssemblyName>Sharer.DemoConsole</AssemblyName>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Rufus31415</Authors>
+    <Company>Rufus31415</Company>
+    <Product>Sharer</Product>
+    <PackageProjectUrl>https://github.com/Rufus31415/Sharer.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Rufus31415/Sharer.NET.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>Sharer is an Arduino and .NET Library that facilitates serial communication between an Arduino and a desktop application. It is easy to read/write variables and remote call functions.</Description>
+    <PackageIcon>Sharer.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sharer.NET\Sharer.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Sharer.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
