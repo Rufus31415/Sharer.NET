@@ -32,7 +32,7 @@ jobs:
         dotnet restore $Env:GITHUB_WORKSPACE\Sharer_VS2019.sln -r win-arm
         .\MSBuild.exe "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj" /p:DeployOnBuild=true /p:PublishProfile=win-arm /p:Configuration=Release /p:OutDir=bin/win-arm
         dotnet restore $Env:GITHUB_WORKSPACE\Sharer_VS2019.sln -r osx-x64
-        .\MSBuild.exe "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj" /p:DeployOnBuild=true /p:PublishProfile=osx-x64 /p:Configuration=Release /p:OutDir=bin/osx-64
+        .\MSBuild.exe "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj" /p:DeployOnBuild=true /p:PublishProfile=osx-x64 /p:Configuration=Release /p:OutDir=bin/osx-x64
         dotnet restore $Env:GITHUB_WORKSPACE\Sharer_VS2019.sln -r linux-arm
         .\MSBuild.exe "$Env:GITHUB_WORKSPACE\Sharer.NET Example - Console\Sharer.NET Example - Console.csproj" /p:DeployOnBuild=true /p:PublishProfile=linux-arm /p:Configuration=Release /p:OutDir=bin/linux-arm
         dotnet restore $Env:GITHUB_WORKSPACE\Sharer_VS2019.sln -r linux-x64
