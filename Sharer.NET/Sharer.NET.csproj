@@ -19,6 +19,9 @@
 	<Description>Sharer is an Arduino and .NET Library that facilitates serial communication between an Arduino and a desktop application. It is easy to read/write variables and remote call functions.</Description>
 	<PackageIcon>Sharer.png</PackageIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+ 	<DocumentationMarkdown>$(MSBuildProjectDirectory)\Sharer.NET.Documentation.md</DocumentationMarkdown>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -57,5 +60,11 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Vsxmd" Version="1.4.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
