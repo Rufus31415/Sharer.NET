@@ -29,6 +29,14 @@
 Sharer is both a <b>.NET and an Arduino Library</b>. It allows a desktop application to <b>read/write variables</b> and <b>remote call functions on Arduino</b>, using the Sharer protocole accross a serial communication.
 Sharer has initially been developped for the Ballcuber project (https://ballcuber.github.io), but it is now a standalone library ;).
 
+<img align="center" alt="Download arduino library and examples" src="https://img.shields.io/badge/▼-Download%20Arduino%20library%20and%20examples-blue?logo=arduino&style=for-the-badge" />
+
+
+![Download Nuget library](https://img.shields.io/badge/▼-Download%20Nuget%20.NET%20Library-20038d?logo=nuget&style=for-the-badge)
+
+![Download .NET library and example](https://img.shields.io/badge/▼-Download%20.NET%20Library%20and%20examples-green?logo=c%20sharp&style=for-the-badge)
+
+
 # Overview
 ## Arduino code
 ``` C++
