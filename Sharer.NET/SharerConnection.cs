@@ -138,6 +138,36 @@ namespace Sharer
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Request to Send (RTS) signal is enabled during serial communication
+        /// </summary>
+        public bool RtsEnable
+        {
+            get
+            {
+                return _serialPort.RtsEnable;
+            }
+            set
+            {
+                _serialPort.RtsEnable = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that enables the Data Terminal Ready (DTR) signal during serial communication
+        /// </summary>
+        public bool DtrEnable
+        {
+            get
+            {
+                return _serialPort.DtrEnable;
+            }
+            set
+            {
+                _serialPort.DtrEnable = true;
+            }
+        }
+
+        /// <summary>
         /// List of shared functions. This list is refresh after a call to RefreshFunctions() or Connect()
         /// </summary>
         public readonly List<SharerFunction> Functions = new List<SharerFunction>();
